@@ -11,6 +11,8 @@ st.set_page_config(
 )
 
 # --- 2. CSS 스타일링 (폰트/여백 축소 & 다크/라이트 모드 대응) ---
+st.set_option("client.toolbarMode", "viewer")
+
 st.markdown("""
 <style>
     /* 기본 배경 */
