@@ -15,6 +15,10 @@ st.markdown("""
 <style>
     /* 기본 배경 */
     .stApp { background-color: #F4F6F9; }
+            
+    /* 상단 여백 */
+    .block-container { padding-top: 3rem !important; }
+            
     footer { visibility: hidden !important; }
     /* 🌓 라이트/다크 모드 컬러 변수 설정 */
     :root {
