@@ -2,24 +2,30 @@ import streamlit as st
 import pandas as pd
 import time
 
-# --- 1. 페이지 기본 설정 ---
+# --- 1. 페이지 기본 설정 (중앙 집중 레이아웃 유지) ---
 st.set_page_config(
     page_title="픽미! 아빠게임 101",
     page_icon="🎲",
-    layout="wide",
-    initial_sidebar_state="expanded"
+    layout="centered", 
+    initial_sidebar_state="collapsed" # 좌측 상단 > 버튼으로 열기
 )
 
-# --- 2. CSS 스타일링 (버튼 강제 중앙 및 파스텔 피치 복원) ---
+# --- 2. CSS 스타일링 (파스텔 피치 복원 & 강력한 버튼 중앙 정렬) ---
 st.markdown("""
 <style>
     .stApp { background-color: #F4F6F9; }
     
-    /* 포커 카드 뒷면 (오렌지/피치 테마 복원) */
+    /* 🚨 우측 상단 지저분한 아이콘만 숨기고, 좌측 사이드바 버튼(>)은 살림! */
+    [data-testid="stHeaderActionElements"] { display: none !important; }
+    .stAppDeployButton { display: none !important; }
+    #MainMenu { display: none !important; }
+    footer { display: none !important; }
+    
+    /* 포커 카드 뒷면 (오렌지 테마 복원) */
     .poker-back {
         width: 340px; 
         height: 520px;
-        margin: 0 auto; /* 영역 내 중앙 정렬 */
+        margin: 0 auto !important; /* 마법의 중앙 정렬 */
         border-radius: 25px;
         background-color: #E25E3E; 
         background-image: repeating-linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.1) 75%, rgba(255,255,255,0.1)), repeating-linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%, transparent 75%, rgba(255,255,255,0.1) 75%, rgba(255,255,255,0.1));
@@ -38,7 +44,7 @@ st.markdown("""
         width: 340px; 
         height: 520px;
         perspective: 1000px;
-        margin: 0 auto;
+        margin: 0 auto !important;
         cursor: pointer;
         display: block;
     }
@@ -52,6 +58,7 @@ st.markdown("""
     }
     .flip-card input[type="checkbox"]:checked ~ .flip-card-inner { transform: rotateY(180deg); }
     
+    /* 카드 앞면/뒷면 패널 */
     .card-panel {
         position: absolute;
         width: 100%;
@@ -60,42 +67,45 @@ st.markdown("""
         backface-visibility: hidden;
         border-radius: 25px;
         padding: 30px 20px;
-        box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         border: 4px solid white;
         display: flex;
         flex-direction: column;
     }
     
-    .flip-card-front { background: white; align-items: center; justify-content: center; color: #333; }
-    .flip-card-back { background: #FFF9F2; transform: rotateY(180deg); text-align: left; overflow-y: auto; justify-content: flex-start; color: #333; }
+    .flip-card-front { background: #FFFFFF; align-items: center; justify-content: center; color: #1A202C !important; }
+    .flip-card-back { background: #FFF9F2; transform: rotateY(180deg); text-align: left; overflow-y: auto; justify-content: flex-start; color: #1A202C !important; }
 
-    /* 카드 내부 글자 */
+    /* 카드 내부 글자 및 UI */
     .emoji-huge { font-size: 100px; margin: 20px auto; text-align: center; }
     .title-text { font-size: 28px; font-weight: 900; color: #2C3E50; margin-bottom: 25px; word-break: keep-all; text-align: center; }
-    .info-row { display: flex; justify-content: space-between; font-size: 17px; font-weight: bold; margin: 10px 0; color: #555; width: 100%; padding: 0 15px; }
+    .info-row { display: flex; justify-content: space-between; font-size: 17px; font-weight: bold; margin: 10px 0; color: #4A5568; width: 100%; padding: 0 15px; }
     .stamina-stars { color: #FF9B50; letter-spacing: 2px; }
     .stage-badge { position: absolute; top: 15px; right: 15px; background: #FFF5EE; padding: 5px 12px; border-radius: 15px; font-size: 13px; font-weight: bold; color: #E25E3E; }
-    .flip-hint { margin-top: auto; font-size: 12px; color: #AAA; font-weight: bold; animation: pulse 1.5s infinite; text-align: center; }
+    .flip-hint { margin-top: auto; font-size: 12px; color: #A0AEC0; font-weight: bold; animation: pulse 1.5s infinite; text-align: center; }
     
     .back-section { margin-bottom: 18px; width: 100%; }
     .back-title { font-size: 16px; font-weight: 900; color: #E25E3E; margin-bottom: 7px; }
-    .back-text { font-size: 15px; color: #444; line-height: 1.6; word-break: keep-all; padding-left: 5px; }
+    .back-text { font-size: 15px; color: #2D3748; line-height: 1.6; word-break: keep-all; padding-left: 5px; }
 
     @keyframes shake { 0%, 100% { transform: rotate(0deg) scale(1); } 25% { transform: rotate(-8deg) scale(1.05); } 75% { transform: rotate(8deg) scale(1.05); } }
     .anim-shake { animation: shake 0.2s infinite; display: block; margin: 0 auto; }
     @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
     
-    /* 🎯 예쁜 파스텔 피치 버튼 복원 및 절대적 중앙 고정 */
-    .stButton, div[data-testid="stButton"] {
+    /* 🎯 폭주기관차 버튼 제압 1단계: CSS 강제 중앙화 및 파스텔 색상 복원 */
+    div.stButton, div[data-testid="stButton"] {
         display: flex !important;
         justify-content: center !important;
-        text-align: center !important;
+        align-items: center !important;
         width: 100% !important;
+        margin-top: 10px;
     }
-    .stButton > button, div[data-testid="stButton"] > button { 
-        width: 340px !important; 
+    div[data-testid="stButton"] > button { 
+        width: 340px !important;       
+        min-width: 340px !important;
         max-width: 340px !important;
-        margin: 0 auto !important; /* 물리적 중앙 고정 */
+        margin: 0 auto !important;
+        /* 다시 돌아온 옅은 주황(파스텔 피치) 그라데이션 */
         background: linear-gradient(135deg, #FFD1BA 0%, #FFB5A7 100%) !important;
         color: #4A4A4A !important;
         border: none !important;
@@ -103,12 +113,12 @@ st.markdown("""
         font-weight: 900 !important; 
         padding: 16px !important; 
         border-radius: 15px !important; 
-        box-shadow: 0 4px 10px rgba(255, 181, 167, 0.4) !important;
-        transition: all 0.2s ease !important;
+        box-shadow: 0 4px 15px rgba(255, 181, 167, 0.4) !important;
+        transition: all 0.3s ease !important;
     }
-    .stButton > button:hover, div[data-testid="stButton"] > button:hover { 
+    div[data-testid="stButton"] > button:hover { 
         transform: translateY(-2px) !important; 
-        box-shadow: 0 6px 15px rgba(255, 181, 167, 0.6) !important; 
+        box-shadow: 0 6px 20px rgba(255, 181, 167, 0.6) !important; 
     }
 </style>
 """, unsafe_allow_html=True)
@@ -137,7 +147,7 @@ if 'picked_card' not in st.session_state: st.session_state.picked_card = None
 if 'trigger_shuffle' not in st.session_state: st.session_state.trigger_shuffle = False
 
 # ==========================================
-# ⬅️ 좌측 UI: 설정창
+# ⬅️ 좌측 UI: 사이드바 (설정창)
 # ==========================================
 with st.sidebar:
     st.markdown("### ⚙️ 놀이 조건 설정")
@@ -147,7 +157,7 @@ with st.sidebar:
     chk_뛰 = st.checkbox("🏃 뛰는아이", value=True)
     
     stage_keywords = []
-    # 🎯 검색어 완벽 복구
+    # 🎯 검색어 유지
     if chk_기: stage_keywords.append("기는아이") 
     if chk_걷: stage_keywords.append("걷는아이")
     if chk_뛰: stage_keywords.append("뛰는아이")
@@ -160,17 +170,11 @@ with st.sidebar:
     keyword = st.text_input("**4. 준비물/상황 (선택사항)**", placeholder="예: 거실에서, 종이컵")
 
 # ==========================================
-# ➡️ 중앙 UI (화면 3등분으로 강제 레이아웃 고정)
+# ➡️ 중앙 UI 및 셔플 로직
 # ==========================================
-# 화면을 1:1.5:1 비율로 쪼개어 무조건 가운데에 카드와 버튼을 가둡니다.
-col_left, col_center, col_right = st.columns([1, 1.5, 1])
+st.markdown("<h1 style='text-align: center; color: #2C3E50; margin-bottom: 20px;'>👨‍👧 픽미! 아빠게임 101</h1>", unsafe_allow_html=True)
 
-with col_center:
-    st.markdown("<h1 style='text-align: center; color:#2C3E50; margin-bottom: 20px;'>👨‍👧 픽미! 아빠게임 101</h1>", unsafe_allow_html=True)
-    
-    main_area = st.empty()
-    st.markdown("<br>", unsafe_allow_html=True) # 카드와 버튼 사이 간격
-    btn_area = st.empty()
+main_area = st.empty()
 
 # 셔플 상태 로직
 if st.session_state.trigger_shuffle:
@@ -179,20 +183,18 @@ if st.session_state.trigger_shuffle:
     if df.empty:
         main_area.error("데이터가 없습니다.")
     else:
-        # [1] 셔플 애니메이션 (들여쓰기 완전 제거)
         for _ in range(12): 
             anim_html = """
 <div style="text-align: center; width: 100%;">
 <div class="poker-back anim-shake">
-<div style="font-size: 100px; margin: 0;">🃏</div>
+<div style="font-size: 100px; margin: 0 auto;">🃏</div>
 </div>
-<h3 style="color:#666; margin-top: 15px;">조건에 맞는 카드를 찾는 중...</h3>
+<h3 style="color: #666; margin-top: 15px;">조건에 맞는 카드를 찾는 중...</h3>
 </div>
 """
             main_area.markdown(anim_html, unsafe_allow_html=True)
             time.sleep(0.08)
         
-        # [2] 데이터 필터링
         col_stage = '아이발달단계' if '아이발달단계' in df.columns else '아이구분'
         
         if stage_keywords:
@@ -216,7 +218,6 @@ if st.session_state.trigger_shuffle:
                 filtered_df['필요도구'].astype(str).str.contains(keyword)
             ]
         
-        # [3] 결과 출력
         if len(filtered_df) > 0:
             st.session_state.picked_card = filtered_df.sample(1).iloc[0].to_dict()
             st.rerun()
@@ -229,9 +230,9 @@ if st.session_state.picked_card is None:
     main_area.markdown("""
 <div style="text-align: center; width: 100%;">
 <div class="poker-back">
-<div style="font-size: 100px; margin: 0;">🃏</div>
+<div style="font-size: 100px; margin: 0 auto;">🃏</div>
 </div>
-<h3 style="color:#666; margin-top: 20px;">좌측 조건을 맞추고 버튼을 눌러주세요!</h3>
+<h3 style="color: #666; margin-top: 20px;">좌측(>) 메뉴에서 조건을 맞추고 버튼을 눌러주세요!</h3>
 </div>
 """, unsafe_allow_html=True)
     
@@ -252,10 +253,9 @@ else:
     c_method = card.get('놀이방법', '자유롭게 놀아주세요!')
     c_tip = card.get('아빠꿀팁', '아빠의 센스를 발휘해보세요!')
     
-    # 🎯 마크다운 버그 원천 차단을 위해 들여쓰기를 단 1칸도 허용하지 않음
     html_flip_card = f"""
 <div style="text-align: center; width: 100%;">
-<h3 style="color:#E25E3E; margin-bottom: 20px;">✨ 추천 놀이를 뽑았어요!</h3>
+<h3 style="color: #E25E3E; margin-bottom: 20px;">✨ 추천 놀이를 뽑았어요!</h3>
 <label class="flip-card">
 <input type="checkbox" style="display: none;">
 <div class="flip-card-inner">
@@ -263,7 +263,7 @@ else:
 <div class="stage-badge">{c_stage_icon} {c_stage}</div>
 <div class="emoji-huge">{c_icon}</div>
 <div class="title-text">{c_title}</div>
-<hr style="border: 0; border-top: 2px dashed #EEE; margin: 20px 0; width: 100%;">
+<hr style="border: 0; border-top: 2px dashed #E2E8F0; margin: 20px 0; width: 100%;">
 <div class="info-row">
 <span>{c_dad_icon} 아빠 체력</span>
 <span class="stamina-stars">{c_dad_sta}</span>
@@ -277,7 +277,7 @@ else:
 <div class="card-panel flip-card-back">
 <div class="stage-badge">{c_stage_icon} {c_stage}</div>
 <h3 style="margin-top: 10px; color:#2C3E50;">{c_icon} {c_title}</h3>
-<hr style="border: 0; border-top: 1px solid #DDD; margin: 15px 0;">
+<hr style="border: 0; border-top: 1px solid #E2E8F0; margin: 15px 0;">
 <div class="back-section">
 <div class="back-title">🎒 필요 도구</div>
 <div class="back-text">{c_tools}</div>
@@ -298,11 +298,15 @@ else:
 """
     main_area.markdown(html_flip_card, unsafe_allow_html=True)
 
-# --- 버튼 레이아웃 ---
-# 카드와 완전히 동일한 공간(col_center) 안에 버튼을 배치하여 절대 쏠리지 않게 만듦
-with col_center:
+# ==========================================
+# ➡️ 무조건 정중앙에 꽂히는 2중 잠금 버튼 레이아웃
+# ==========================================
+# 🎯 폭주기관차 제압 2단계: 화면을 [빈공간 - 버튼(가운데) - 빈공간] 비율로 강제 분할!
+# 아무리 스트림릿이 좌측으로 밀려고 해도 물리적으로 가운데 영역(col2)에 갇혀버립니다.
+col1, col2, col3 = st.columns([1, 1.4, 1])
+
+with col2:
     btn_label = "🎲 Pick Me!" if st.session_state.picked_card is None else "🔄 다시 Pick Me!"
-    # use_container_width=True 와 CSS 340px 고정이 시너지를 내어 무조건 가운데 위치함
     if st.button(btn_label, type="primary", use_container_width=True):
         st.session_state.trigger_shuffle = True
         st.rerun()
