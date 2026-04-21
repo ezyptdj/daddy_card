@@ -9,7 +9,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# --- 2. CSS 스타일링 (CSS Grid로 절대 안 깨지는 레이아웃 구축) ---
+# --- 2. CSS 스타일링 (버튼 찌그러짐 방지 & 슈퍼맨 이모지 적용) ---
 st.set_option("client.toolbarMode", "viewer") 
 
 st.markdown("""
@@ -57,27 +57,37 @@ st.markdown("""
     /* 헤더 제거 */
     [data-testid="stHeader"], header { display: none !important; }
     
-    /* 🚨🔥 궁극의 해결책: CSS GRID로 바둑판처럼 공간을 강제로 쪼개버림 🔥🚨 */
+    /* 🚨🔥 궁극의 해결책: CSS GRID 245px + 10px(gap) + 65px = 320px 🔥🚨 */
     #root div[data-testid="stHorizontalBlock"] {
         display: grid !important;
-        /* 왼쪽은 남는 공간 꽉 채우기(1fr), 오른쪽은 무조건 55px 고정 */
-        grid-template-columns: 1fr 55px !important; 
-        gap: 10px !important; /* 버튼 사이 10px 간격 */
-        width: 100% !important;
-        max-width: 320px !important; /* 전체 넓이는 카드와 동일하게 320px */
+        grid-template-columns: 245px 65px !important; /* 설정 버튼 공간 10px 더 늘림! */
+        gap: 10px !important; 
+        width: 320px !important;
+        min-width: 320px !important;
+        max-width: 320px !important; 
         margin: 0 auto !important;
         padding: 0 !important;
     }
     
-    /* Grid 안의 컬럼들은 내부 설정 무시하고 무조건 꽉 참 */
-    #root div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
-        width: 100% !important;
-        min-width: 0 !important;
+    /* 첫 번째 칸 (메인버튼) */
+    #root div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:first-child {
+        width: 245px !important;
+        min-width: 245px !important;
+        max-width: 245px !important;
         margin: 0 !important;
         padding: 0 !important;
     }
 
-    /* 🥷 카드 및 애니메이션 크기 (320px) */
+    /* 두 번째 칸 (설정버튼/닫기버튼) */
+    #root div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:last-child {
+        width: 65px !important;
+        min-width: 65px !important;
+        max-width: 65px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    /* 🦸‍♂️ 카드 및 애니메이션 크기 (320px) */
     .poker-back, .flip-card {
         width: 100% !important;
         max-width: 320px !important; 
@@ -132,7 +142,6 @@ st.markdown("""
     #root button[kind="primary"], #root button[kind="secondary"] {
         -webkit-appearance: none !important; 
         appearance: none !important;
-        width: 100% !important; /* Grid 칸에 무조건 100% 꽉 채움 */
         height: 55px !important;
         border-radius: 15px !important;
         font-weight: 900 !important;
@@ -143,8 +152,11 @@ st.markdown("""
         align-items: center !important;
     }
     
-    /* 🎲 뽑기 버튼 (Primary) */
+    /* 🎲 뽑기 버튼 (Primary) -> 크기 245px로 조절 */
     #root button[kind="primary"] {
+        width: 245px !important;
+        min-width: 245px !important;
+        max-width: 245px !important;
         background: linear-gradient(135deg, #FFD1BA 0%, #FFB5A7 100%) !important;
         background-color: #FFB5A7 !important; 
         color: #4A4A4A !important;
@@ -152,8 +164,11 @@ st.markdown("""
         box-shadow: 0 4px 15px rgba(255, 181, 167, 0.4) !important;
     }
     
-    /* ⚙️ 설정 & ✖️ 닫기 버튼 (Secondary) */
+    /* ⚙️ 설정 & ✖️ 닫기 버튼 (Secondary) -> 크기 65px로 넉넉하게! 찌그러짐 해방! */
     #root button[kind="secondary"] {
+        width: 65px !important;
+        min-width: 65px !important;
+        max-width: 65px !important;
         padding: 0 !important; 
         background: #B5EAD7 !important; 
         background-color: #B5EAD7 !important; 
@@ -222,7 +237,7 @@ st.markdown("<h1 style='text-align: center; color: var(--text-title); margin-bot
 # ⚙️ 설정 화면
 # ==========================================
 if st.session_state.show_settings:
-    # 파이썬 비율 값은 무시되고 CSS Grid가 무조건 1fr 55px로 쪼갬
+    # 파이썬 비율 값은 무시되고 CSS Grid가 무조건 245px, 65px로 쪼갬
     col_t, col_c = st.columns([4, 1])
     with col_t:
         st.markdown("<h3 style='color: var(--text-title); margin-top:12px; margin-bottom:0;'>⚙️ 놀이 조건 설정</h3>", unsafe_allow_html=True)
@@ -246,7 +261,7 @@ if st.session_state.show_settings:
     st.session_state.keyword = st.text_input("**4. 준비물/상황 (선택사항)**", value=st.session_state.keyword, placeholder="예: 거실에서, 종이컵")
 
 # ==========================================
-# 🥷 메인 화면
+# 🦸‍♂️ 메인 화면
 # ==========================================
 else:
     main_area = st.empty()
@@ -257,8 +272,8 @@ else:
             main_area.error("데이터가 없습니다.")
         else:
             for _ in range(10): 
-                # 🥷 모든 기기에서 완벽 지원하는 닌자 이모지로 통일!
-                anim_html = '<div style="text-align: center; width: 100%;"><div class="poker-back anim-shake"><div style="font-size: 85px; margin: 0 auto;">🥷</div></div></div>'
+                # 🦸‍♂️ 아빠를 상징하는 슈퍼맨 이모지 적용!
+                anim_html = '<div style="text-align: center; width: 100%;"><div class="poker-back anim-shake"><div style="font-size: 85px; margin: 0 auto;">🦸‍♂️</div></div></div>'
                 main_area.markdown(anim_html, unsafe_allow_html=True)
                 time.sleep(0.08)
             
@@ -292,7 +307,7 @@ else:
                 st.rerun()
 
     if st.session_state.picked_card is None:
-        main_area.markdown('<div style="text-align: center; width: 100%;"><div class="poker-back"><div style="font-size: 85px; margin: 0 auto;">🥷</div></div></div>', unsafe_allow_html=True)
+        main_area.markdown('<div style="text-align: center; width: 100%;"><div class="poker-back"><div style="font-size: 85px; margin: 0 auto;">🦸‍♂️</div></div></div>', unsafe_allow_html=True)
     elif st.session_state.picked_card == "empty":
         main_area.warning("⚠️ 조건에 맞는 놀이가 없어요. ⚙️ 설정에서 조건을 변경해주세요!")
     else:
@@ -304,7 +319,7 @@ else:
         <div class="flip-card-inner">
         <div class="card-panel flip-card-front">
         <div class="stage-badge">{c.get('구분아이콘', '')} {c.get('아이발달단계', c.get('아이구분', ''))}</div>
-        <div class="emoji-huge">{c.get('카드아이콘', c.get('아이콘', '🥷'))}</div>
+        <div class="emoji-huge">{c.get('카드아이콘', c.get('아이콘', '🦸‍♂️'))}</div>
         <div class="title-text">{c.get('카드', c.get('제목', '놀이'))}</div>
         <hr style="border: 0; border-top: 2px dashed var(--border-color); margin: 20px 0; width: 100%;">
         <div class="info-row"><span>{c.get('아빠아이콘', '👨')} 아빠 체력</span><span class="stamina-stars">{c.get('아빠체력', '★★★')}</span></div>
@@ -313,7 +328,7 @@ else:
         </div>
         <div class="card-panel flip-card-back">
         <div class="stage-badge">{c.get('구분아이콘', '')} {c.get('아이발달단계', c.get('아이구분', ''))}</div>
-        <h3 style="margin-top: 10px; color:var(--text-title); font-size: 1.1em;">{c.get('카드아이콘', '🥷')} {c.get('카드', '제목')}</h3>
+        <h3 style="margin-top: 10px; color:var(--text-title); font-size: 1.1em;">{c.get('카드아이콘', '🦸‍♂️')} {c.get('카드', '제목')}</h3>
         <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 15px 0;">
         <div class="back-section"><div class="back-title">🎒 필요 도구</div><div class="back-text">{c.get('필요도구', '없음')}</div></div>
         <div class="back-section"><div class="back-title">📝 놀이 방법</div><div class="back-text">{c.get('놀이방법', '자유롭게 놀기')}</div></div>
@@ -326,7 +341,7 @@ else:
         """
         main_area.markdown(html_card, unsafe_allow_html=True)
 
-    # 🎯 하단 버튼 영역 (CSS Grid가 알아서 1fr 55px로 맞춰줌)
+    # 🎯 하단 버튼 영역
     st.markdown("<br>", unsafe_allow_html=True)
     b_main, b_sub = st.columns([4, 1]) 
     with b_main:
