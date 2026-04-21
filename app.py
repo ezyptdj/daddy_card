@@ -235,7 +235,8 @@ if st.session_state.show_settings:
     with col_t:
         st.markdown("<h3 style='color: var(--text-title); margin-top:12px; margin-bottom:0;'>⚙️ 놀이 조건 설정</h3>", unsafe_allow_html=True)
     with col_c:
-        if st.button("✖️", type="secondary", key="btn_close"):
+        # 🚨 여기에 use_container_width=True 추가!
+        if st.button("✖️", type="secondary", use_container_width=True, key="btn_close"):
             st.session_state.show_settings = False
             st.rerun()
             
@@ -339,10 +340,12 @@ else:
     b_main, b_sub = st.columns([4, 1]) 
     with b_main:
         lbl = "🎲 Pick Me!" if st.session_state.picked_card is None else "🔄 다시 뽑기!"
-        if st.button(lbl, type="primary", key="btn_main"):
+        # 🚨 여기에 use_container_width=True 다시 추가 완료!
+        if st.button(lbl, type="primary", use_container_width=True, key="btn_main"):
             st.session_state.trigger_shuffle = True
             st.rerun()
     with b_sub:
-        if st.button("⚙️", type="secondary", key="btn_setting"):
+        # 🚨 여기에도 추가 완료!
+        if st.button("⚙️", type="secondary", use_container_width=True, key="btn_setting"):
             st.session_state.show_settings = True
             st.rerun()
