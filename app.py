@@ -9,7 +9,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# --- 2. CSS 스타일링 (버튼 찌그러짐 방지 & 슈퍼맨 이모지 적용) ---
+# --- 2. CSS 스타일링 (무적의 레이아웃 & 슈퍼맨 & 인트로 애니메이션) ---
 st.set_option("client.toolbarMode", "viewer") 
 
 st.markdown("""
@@ -60,7 +60,7 @@ st.markdown("""
     /* 🚨🔥 궁극의 해결책: CSS GRID 245px + 10px(gap) + 65px = 320px 🔥🚨 */
     #root div[data-testid="stHorizontalBlock"] {
         display: grid !important;
-        grid-template-columns: 245px 65px !important; /* 설정 버튼 공간 10px 더 늘림! */
+        grid-template-columns: 245px 65px !important; 
         gap: 10px !important; 
         width: 320px !important;
         min-width: 320px !important;
@@ -69,7 +69,7 @@ st.markdown("""
         padding: 0 !important;
     }
     
-    /* 첫 번째 칸 (메인버튼) */
+    /* 첫 번째 칸 (메인버튼/제목) */
     #root div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:first-child {
         width: 245px !important;
         min-width: 245px !important;
@@ -136,7 +136,11 @@ st.markdown("""
     @keyframes shake { 0%, 100% { transform: rotate(0deg) scale(1); } 25% { transform: rotate(-8deg) scale(1.05); } 75% { transform: rotate(8deg) scale(1.05); } }
     .anim-shake { animation: shake 0.2s infinite; margin: 0 auto; }
     
-    /* 🎨 버튼 공통 디자인 */
+    /* 👑 왕관 둥둥 애니메이션 */
+    @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
+    .crown-icon { animation: float 2s ease-in-out infinite; font-size: 60px; margin-bottom: 15px; display: inline-block; }
+    
+    /* 🎨 버튼 공통 디자인 초기화 */
     #root div[data-testid="stButton"] { width: 100% !important; padding: 0 !important; margin: 0 !important; }
     
     #root button[kind="primary"], #root button[kind="secondary"] {
@@ -152,11 +156,11 @@ st.markdown("""
         align-items: center !important;
     }
     
-    /* 🎲 뽑기 버튼 (Primary) -> 크기 245px로 조절 */
+    /* 🎤 팝업의 "입장하기" 버튼 (기본 320px 풀사이즈 적용) */
     #root button[kind="primary"] {
-        width: 245px !important;
-        min-width: 245px !important;
-        max-width: 245px !important;
+        width: 100% !important;
+        max-width: 320px !important;
+        margin: 0 auto !important;
         background: linear-gradient(135deg, #FFD1BA 0%, #FFB5A7 100%) !important;
         background-color: #FFB5A7 !important; 
         color: #4A4A4A !important;
@@ -164,7 +168,15 @@ st.markdown("""
         box-shadow: 0 4px 15px rgba(255, 181, 167, 0.4) !important;
     }
     
-    /* ⚙️ 설정 & ✖️ 닫기 버튼 (Secondary) -> 크기 65px로 넉넉하게! 찌그러짐 해방! */
+    /* 🎲 하단 메인 영역의 "뽑기" 버튼 (245px로 축소 덮어쓰기) */
+    #root div[data-testid="stHorizontalBlock"] button[kind="primary"] {
+        width: 245px !important;
+        min-width: 245px !important;
+        max-width: 245px !important;
+        margin: 0 !important;
+    }
+    
+    /* ⚙️ 설정 & ✖️ 닫기 버튼 (Secondary) -> 크기 65px 고정 */
     #root button[kind="secondary"] {
         width: 65px !important;
         min-width: 65px !important;
@@ -177,7 +189,7 @@ st.markdown("""
         box-shadow: 0 4px 12px rgba(181, 234, 215, 0.5) !important;
     }
     
-    /* 🌙 다크모드 버튼 색상 유지 */
+    /* 🌙 다크모드 버튼 */
     @media (prefers-color-scheme: dark) {
         #root button[kind="primary"] {
             background: linear-gradient(135deg, #FFAAA5 0%, #FF8B94 100%) !important;
@@ -220,6 +232,7 @@ def load_data():
 df = load_data()
 
 # --- 4. 세션 상태 ---
+if 'intro_dismissed' not in st.session_state: st.session_state.intro_dismissed = False
 if 'show_settings' not in st.session_state: st.session_state.show_settings = False
 if 'chk_기' not in st.session_state: st.session_state.chk_기 = True
 if 'chk_걷' not in st.session_state: st.session_state.chk_걷 = True
@@ -230,17 +243,48 @@ if 'keyword' not in st.session_state: st.session_state.keyword = ""
 if 'picked_card' not in st.session_state: st.session_state.picked_card = None
 if 'trigger_shuffle' not in st.session_state: st.session_state.trigger_shuffle = False
 
+# ==========================================
+# 👑 픽미업 101 인트로 (스플래시 화면)
+# ==========================================
+if not st.session_state.intro_dismissed:
+    st.markdown("""
+    <div style="width: 320px; margin: 0 auto; text-align: center; padding: 40px 20px; background: var(--card-front-bg); border-radius: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 4px solid var(--border-color); margin-top: 20px; margin-bottom: 20px;">
+        <div class="crown-icon">👑</div>
+        <h2 style="color: var(--text-title); margin-bottom: 20px; font-weight: 900; line-height: 1.3;">Pick Me!<br>아빠카드 101</h2>
+        <p style="color: var(--text-main); line-height: 1.6; font-size: 15px; font-weight: bold; word-break: keep-all;">
+            "국민 아빠 프로듀서님!<br>
+            아이의 웃음을 책임질 101개의<br>레전드 놀이가 기다리고 있습니다."
+        </p>
+        <p style="color: var(--text-muted); font-size: 13.5px; margin-top: 20px; word-break: keep-all;">
+            오늘 밤, 아이의 꿀잠을 이끌어낼<br>
+            <b>최종 데뷔조(1-Pick) 놀이</b>는 무엇일까요?<br>
+            당신의 놀이에 픽미업 하세요! 👇
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
+    
+    st.markdown("<div style='width: 320px; margin: 0 auto;'>", unsafe_allow_html=True)
+    
+    # 여기서 만들어지는 버튼은 320px 꽉 차게 나옵니다!
+    if st.button("🎤 거실(오디션장)로 입장하기", type="primary", use_container_width=True, key="btn_intro"):
+        st.session_state.intro_dismissed = True
+        st.rerun()
+        
+    st.markdown("</div>", unsafe_allow_html=True)
+    st.stop() # 인트로가 떠 있을 땐 뒤의 메인 화면 렌더링 중지
+
+# ==========================================
+# 🏠 메인 앱 시작
+# ==========================================
 # 공통 타이틀
 st.markdown("<h1 style='text-align: center; color: var(--text-title); margin-bottom: 15px; font-size: 1.8em; white-space: nowrap;'>👨‍👧 픽미! 아빠카드 101</h1>", unsafe_allow_html=True)
 
-# ==========================================
 # ⚙️ 설정 화면
-# ==========================================
 if st.session_state.show_settings:
-    # 파이썬 비율 값은 무시되고 CSS Grid가 무조건 245px, 65px로 쪼갬
     col_t, col_c = st.columns([4, 1])
     with col_t:
-        st.markdown("<h3 style='color: var(--text-title); margin-top:12px; margin-bottom:0;'>⚙️ 놀이 조건 설정</h3>", unsafe_allow_html=True)
+        # 🚨 줄바꿈 방지(white-space: nowrap) 및 폰트 크기(20px) 조정으로 245px 안에 쏙 들어가게 수정 완료!
+        st.markdown("<h3 style='color: var(--text-title); margin-top:12px; margin-bottom:0; font-size: 20px; white-space: nowrap; letter-spacing: -0.5px;'>⚙️ 놀이 조건 설정</h3>", unsafe_allow_html=True)
     with col_c:
         if st.button("✖️", type="secondary", use_container_width=True, key="btn_close"):
             st.session_state.show_settings = False
@@ -260,9 +304,7 @@ if st.session_state.show_settings:
     st.markdown("<br>", unsafe_allow_html=True)
     st.session_state.keyword = st.text_input("**4. 준비물/상황 (선택사항)**", value=st.session_state.keyword, placeholder="예: 거실에서, 종이컵")
 
-# ==========================================
-# 🦸‍♂️ 메인 화면
-# ==========================================
+# 🦸‍♂️ 메인 카드 화면
 else:
     main_area = st.empty()
 
@@ -272,7 +314,7 @@ else:
             main_area.error("데이터가 없습니다.")
         else:
             for _ in range(10): 
-                # 🦸‍♂️ 아빠를 상징하는 슈퍼맨 이모지 적용!
+                # 🦸‍♂️ 슈퍼맨 이모지 적용
                 anim_html = '<div style="text-align: center; width: 100%;"><div class="poker-back anim-shake"><div style="font-size: 85px; margin: 0 auto;">🦸‍♂️</div></div></div>'
                 main_area.markdown(anim_html, unsafe_allow_html=True)
                 time.sleep(0.08)
@@ -341,7 +383,7 @@ else:
         """
         main_area.markdown(html_card, unsafe_allow_html=True)
 
-    # 🎯 하단 버튼 영역
+    # 🎯 하단 버튼 영역 (이 버튼들만 245px, 65px로 나뉘어 표시됨)
     st.markdown("<br>", unsafe_allow_html=True)
     b_main, b_sub = st.columns([4, 1]) 
     with b_main:
