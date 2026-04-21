@@ -9,7 +9,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# --- 2. CSS 스타일링 (다크모드 파스텔 최적화 및 셔플 무늬 오류 수정) ---
+# --- 2. CSS 스타일링 (모바일 레이아웃 강제 고정 및 버그 픽스) ---
 st.set_option("client.toolbarMode", "viewer") 
 
 st.markdown("""
@@ -24,11 +24,6 @@ st.markdown("""
         --text-muted: #718096;
         --border-color: #FBD38D; 
         --tip-bg: #FFEBE0;
-        
-        /* 라이트모드 맑은 파스텔 버튼 */
-        --btn-primary-bg: linear-gradient(135deg, #FFD1BA 0%, #FFB5A7 100%);
-        --btn-secondary-bg: linear-gradient(135deg, #E2F0CB 0%, #B5EAD7 100%);
-        --btn-text: #4A4A4A;
     }
     
     @media (prefers-color-scheme: dark) {
@@ -41,20 +36,17 @@ st.markdown("""
             --text-muted: #9BA3AF;
             --border-color: #4A5568;
             --tip-bg: #3E4553;
-            
-            /* 다크모드 전용 맑고 선명한 파스텔 버튼 */
-            --btn-primary-bg: linear-gradient(135deg, #FFAAA5 0%, #FF8B94 100%);
-            --btn-secondary-bg: linear-gradient(135deg, #A8E6CF 0%, #DCEDC1 100%);
-            --btn-text: #1A1A1A;
         }
     }
 
     /* 기본 배경 */
     .stApp { background-color: var(--app-bg) !important; }
     
-    /* 🚨 상단 여백 최소화 및 컨테이너 고정 */
+    /* 🚨 전체 앱 넓이를 카드와 똑같은 '320px'로 완벽하게 잠금! (버튼 튀어나옴 방지) */
     .block-container { 
-        max-width: 360px !important; 
+        max-width: 320px !important; 
+        padding-left: 0 !important;
+        padding-right: 0 !important;
         padding-top: 0.1rem !important; 
         padding-bottom: 1rem !important; 
         margin: 0 auto !important;
@@ -63,7 +55,7 @@ st.markdown("""
     /* 헤더 제거 */
     [data-testid="stHeader"], header { display: none !important; }
     
-    /* 📱 모바일 가로 레이아웃 강제 유지 */
+    /* 📱 모바일 가로 레이아웃 강제 유지 (80% : 20% 비율 절대 고정) */
     div[data-testid="stHorizontalBlock"] {
         display: flex !important;
         flex-direction: row !important;
@@ -71,16 +63,22 @@ st.markdown("""
         align-items: center !important;
         justify-content: space-between !important;
         width: 100% !important;
+        gap: 8px !important; /* 버튼 사이 간격 */
     }
-    div[data-testid="column"] {
-        width: auto !important;
-        flex: 1 1 auto !important;
-        min-width: 0px !important;
+    div[data-testid="column"]:nth-child(1) {
+        width: 80% !important;
+        flex: 0 0 80% !important;
+        min-width: 0 !important;
+    }
+    div[data-testid="column"]:nth-child(2) {
+        width: 20% !important;
+        flex: 0 0 20% !important;
+        min-width: 0 !important;
     }
 
-    /* 🃏 카드 및 애니메이션 크기 (320px 고정) */
+    /* 🃏 카드 및 애니메이션 크기 (320px) */
     .poker-back, .flip-card {
-        width: 320px !important; 
+        width: 100% !important; 
         height: 520px !important;
         margin: 0 auto !important; 
     }
@@ -123,13 +121,14 @@ st.markdown("""
     .back-title { font-size: 14px; font-weight: 900; color: #E25E3E; margin-bottom: 7px; }
     .back-text { font-size: 13.5px; color: var(--text-main); line-height: 1.6; word-break: keep-all; padding-left: 5px; }
 
-    /* 셔플 애니메이션 오류 수정 (display 속성 삭제) */
     @keyframes shake { 0%, 100% { transform: rotate(0deg) scale(1); } 25% { transform: rotate(-8deg) scale(1.05); } 75% { transform: rotate(8deg) scale(1.05); } }
     .anim-shake { animation: shake 0.2s infinite; margin: 0 auto; }
     @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
     
-    /* 🎨 버튼 디자인 */
+    /* 🎨 버튼 공통 디자인 (모바일 백화현상 완벽 제압) */
     button {
+        -webkit-appearance: none !important; /* 모바일 Safari 기본 스타일 무력화 */
+        appearance: none !important;
         border-radius: 15px !important; 
         font-weight: 900 !important; 
         height: 55px !important;
@@ -140,20 +139,36 @@ st.markdown("""
         border: none !important;
     }
     
-    /* 🎲 메인 뽑기 버튼 (Primary) */
+    /* 🎲 라이트모드: 메인 뽑기 버튼 (Primary) */
     button[data-testid="baseButton-primary"] {
-        background: var(--btn-primary-bg) !important;
-        color: var(--btn-text) !important;
+        background: linear-gradient(135deg, #FFD1BA 0%, #FFB5A7 100%) !important;
+        background-color: #FFB5A7 !important; /* 그라데이션 실패 시 대비책 */
+        color: #4A4A4A !important;
         font-size: 18px !important; 
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+        box-shadow: 0 4px 15px rgba(255, 181, 167, 0.4) !important;
     }
     
-    /* ⚙️ 설정 & ✖️ 닫기 버튼 (Secondary) */
+    /* ⚙️ 라이트모드: 설정 & ✖️ 닫기 버튼 (Secondary) */
     button[data-testid="baseButton-secondary"] {
-        background: var(--btn-secondary-bg) !important;
-        color: var(--btn-text) !important;
-        font-size: 18px !important; 
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+        background: linear-gradient(135deg, #E2F0CB 0%, #B5EAD7 100%) !important;
+        background-color: #B5EAD7 !important; /* 모바일에서 하얗게 뜨는 현상 방지 */
+        color: #4A4A4A !important;
+        font-size: 20px !important; 
+        box-shadow: 0 4px 12px rgba(181, 234, 215, 0.5) !important;
+    }
+    
+    /* 🌙 다크모드 버튼 색상 변경 */
+    @media (prefers-color-scheme: dark) {
+        button[data-testid="baseButton-primary"] {
+            background: linear-gradient(135deg, #FFAAA5 0%, #FF8B94 100%) !important;
+            background-color: #FF8B94 !important;
+            color: #1A1A1A !important;
+        }
+        button[data-testid="baseButton-secondary"] {
+            background: linear-gradient(135deg, #A8E6CF 0%, #DCEDC1 100%) !important;
+            background-color: #A8E6CF !important;
+            color: #1A1A1A !important;
+        }
     }
     
     button:hover { transform: translateY(-2px) !important; filter: brightness(1.05); }
@@ -190,7 +205,7 @@ if 'keyword' not in st.session_state: st.session_state.keyword = ""
 if 'picked_card' not in st.session_state: st.session_state.picked_card = None
 if 'trigger_shuffle' not in st.session_state: st.session_state.trigger_shuffle = False
 
-# 타이틀 (🚨 폰트 크기 축소 및 줄바꿈 방지 적용)
+# 타이틀
 st.markdown("<h1 style='text-align: center; color: var(--text-title); margin-bottom: 15px; font-size: 1.8em; white-space: nowrap;'>👨‍👧 픽미! 아빠카드 101</h1>", unsafe_allow_html=True)
 
 # ==========================================
@@ -231,7 +246,8 @@ else:
             main_area.error("데이터가 없습니다.")
         else:
             for _ in range(10): 
-                anim_html = '<div style="text-align: center; width: 100%;"><div class="poker-back anim-shake"><div style="font-size: 85px; margin: 0 auto;">🃏</div></div><h3 style="color: var(--text-muted); margin-top: 15px; font-size: 1.1em;">조건에 맞는 카드를 찾는 중...</h3></div>'
+                # 문구 삭제됨 (오직 카드만 흔들림)
+                anim_html = '<div style="text-align: center; width: 100%;"><div class="poker-back anim-shake"><div style="font-size: 85px; margin: 0 auto;">🃏</div></div></div>'
                 main_area.markdown(anim_html, unsafe_allow_html=True)
                 time.sleep(0.08)
             
@@ -265,7 +281,8 @@ else:
                 st.rerun()
 
     if st.session_state.picked_card is None:
-        main_area.markdown('<div style="text-align: center; width: 100%;"><div class="poker-back"><div style="font-size: 85px; margin: 0 auto;">🃏</div></div><h3 style="color: var(--text-muted); margin-top: 20px; font-size: 1.2em;">아래 버튼을 눌러 놀이를 뽑아주세요!</h3></div>', unsafe_allow_html=True)
+        # 문구 삭제됨
+        main_area.markdown('<div style="text-align: center; width: 100%;"><div class="poker-back"><div style="font-size: 85px; margin: 0 auto;">🃏</div></div></div>', unsafe_allow_html=True)
     elif st.session_state.picked_card == "empty":
         main_area.warning("⚠️ 조건에 맞는 놀이가 없어요. ⚙️ 설정에서 조건을 변경해주세요!")
     else:
