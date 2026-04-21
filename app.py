@@ -9,7 +9,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# --- 2. CSS 스타일링 (버튼 멀어짐 완벽 해결 - 중앙 결속) ---
+# --- 2. CSS 스타일링 (카드와 버튼의 좌우 끝선 완벽 일치) ---
 st.set_option("client.toolbarMode", "viewer") 
 
 st.markdown("""
@@ -42,14 +42,14 @@ st.markdown("""
     /* 기본 배경 */
     .stApp { background-color: var(--app-bg) !important; }
     
-    /* 🚨 앱 전체 컨테이너 (여유를 두어 카드 흔들림 잘림 방지: 360px) */
+    /* 🚨 1. 전체 컨테이너를 카드 크기(320px)로 완벽하게 잠금! 좌우 여백 압수! */
     .block-container { 
-        width: 360px !important;
-        min-width: 360px !important;
-        max-width: 360px !important; 
-        padding-left: 0 !important;
-        padding-right: 0 !important;
-        padding-top: 0.1rem !important; 
+        width: 320px !important;
+        min-width: 320px !important;
+        max-width: 320px !important; 
+        padding-left: 0px !important;
+        padding-right: 0px !important;
+        padding-top: 1rem !important; 
         padding-bottom: 1rem !important; 
         margin: 0 auto !important;
         overflow-x: hidden !important; 
@@ -58,22 +58,19 @@ st.markdown("""
     /* 헤더 제거 */
     [data-testid="stHeader"], header { display: none !important; }
     
-    /* 🚨🔥 핵심 해결책: 버튼이 멀어지지 않도록 무조건 중앙(center)으로 묶고 간격 10px 고정! 🔥🚨 */
-    #root div[data-testid="stHorizontalBlock"] {
+    /* 🚨 2. 버튼이 들어가는 가로 박스 (카드와 시작점/끝점 똑같이 맞춤) */
+    div[data-testid="stHorizontalBlock"] {
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: nowrap !important;
-        width: 320px !important; /* 카드 넓이와 동일 */
-        min-width: 320px !important;
-        max-width: 320px !important;
-        justify-content: center !important; /* 👈 space-between에서 center로 변경! */
-        gap: 10px !important; /* 👈 무조건 10px만 떨어지게 강제 결속! */
-        margin: 0 auto !important; /* 화면 중앙 정렬 */
+        width: 100% !important; /* 부모(320px)에 꽉 채움 */
+        margin: 0 !important; /* 마이너스 여백으로 왼쪽 삐져나가는 현상 완벽 방지 */
         padding: 0 !important;
+        gap: 10px !important; /* 버튼 사이 10px 간격 */
     }
     
-    /* 첫 번째 칸 (메인버튼 / 제목) = 255px 절대 고정 */
-    #root div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:first-child {
+    /* 첫 번째 칸 (뽑기 버튼) -> 255px (왼쪽 끝선 일치) */
+    div[data-testid="column"]:nth-child(1) {
         width: 255px !important;
         min-width: 255px !important;
         max-width: 255px !important;
@@ -82,8 +79,8 @@ st.markdown("""
         padding: 0 !important;
     }
     
-    /* 두 번째 칸 (설정버튼 / 닫기버튼) = 55px 정사각형 절대 고정 */
-    #root div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:last-child {
+    /* 두 번째 칸 (설정 버튼) -> 55px (오른쪽 끝선 일치) */
+    div[data-testid="column"]:nth-child(2) {
         width: 55px !important;
         min-width: 55px !important;
         max-width: 55px !important;
@@ -92,11 +89,11 @@ st.markdown("""
         padding: 0 !important;
     }
 
-    /* 🃏 카드 및 애니메이션 크기 (320px) */
+    /* 🃏 3. 카드 크기도 부모에 맞춰서 100%(320px)로 설정 */
     .poker-back, .flip-card {
-        width: 320px !important; 
+        width: 100% !important; 
         height: 520px !important;
-        margin: 0 auto !important; 
+        margin: 0 !important; /* 마진 없앰 (컨테이너에 꽉 참) */
     }
     .poker-back {
         border-radius: 25px;
@@ -140,12 +137,13 @@ st.markdown("""
     @keyframes shake { 0%, 100% { transform: rotate(0deg) scale(1); } 25% { transform: rotate(-8deg) scale(1.05); } 75% { transform: rotate(8deg) scale(1.05); } }
     .anim-shake { animation: shake 0.2s infinite; margin: 0 auto; }
     
-    /* 🎨 버튼 공통 디자인 */
-    #root div[data-testid="stButton"] { width: 100% !important; padding: 0 !important; margin: 0 !important; }
+    /* 🎨 버튼 디자인 및 크기 고정 */
+    div[data-testid="stButton"] { width: 100% !important; padding: 0 !important; margin: 0 !important; }
     
-    #root button[kind="primary"], #root button[kind="secondary"] {
+    button[kind="primary"], button[kind="secondary"] {
         -webkit-appearance: none !important; 
         appearance: none !important;
+        width: 100% !important; /* 부모 컬럼(255px, 55px)에 꽉 차게 됨 */
         height: 55px !important;
         border-radius: 15px !important;
         font-weight: 900 !important;
@@ -156,11 +154,7 @@ st.markdown("""
         align-items: center !important;
     }
     
-    /* 🎲 뽑기 버튼 (Primary) -> 크기 255px 박제 */
-    #root button[kind="primary"] {
-        width: 255px !important;
-        min-width: 255px !important;
-        max-width: 255px !important;
+    button[kind="primary"] {
         background: linear-gradient(135deg, #FFD1BA 0%, #FFB5A7 100%) !important;
         background-color: #FFB5A7 !important; 
         color: #4A4A4A !important;
@@ -168,12 +162,7 @@ st.markdown("""
         box-shadow: 0 4px 15px rgba(255, 181, 167, 0.4) !important;
     }
     
-    /* ⚙️ 설정 & ✖️ 닫기 버튼 (Secondary) -> 크기 55px 정사각형 박제 */
-    #root button[kind="secondary"] {
-        width: 55px !important;
-        min-width: 55px !important;
-        max-width: 55px !important;
-        padding: 0 !important; 
+    button[kind="secondary"] {
         background: #B5EAD7 !important; 
         background-color: #B5EAD7 !important; 
         color: #4A4A4A !important;
@@ -181,15 +170,15 @@ st.markdown("""
         box-shadow: 0 4px 12px rgba(181, 234, 215, 0.5) !important;
     }
     
-    /* 🌙 다크모드 버튼 색상 유지 */
+    /* 🌙 다크모드 */
     @media (prefers-color-scheme: dark) {
-        #root button[kind="primary"] {
+        button[kind="primary"] {
             background: linear-gradient(135deg, #FFAAA5 0%, #FF8B94 100%) !important;
             background-color: #FF8B94 !important;
             color: #1A1A1A !important;
             box-shadow: 0 4px 15px rgba(255, 139, 148, 0.4) !important;
         }
-        #root button[kind="secondary"] {
+        button[kind="secondary"] {
             background: #A8E6CF !important;
             background-color: #A8E6CF !important; 
             color: #1A1A1A !important;
@@ -197,7 +186,7 @@ st.markdown("""
         }
     }
     
-    #root button[kind="primary"]:hover, #root button[kind="secondary"]:hover { 
+    button[kind="primary"]:hover, button[kind="secondary"]:hover { 
         transform: translateY(-2px) !important; 
         filter: brightness(1.05); 
     }
