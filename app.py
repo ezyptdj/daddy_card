@@ -9,7 +9,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# --- 2. CSS 스타일링 (모바일 레이아웃 강제 고정 및 버그 픽스) ---
+# --- 2. CSS 스타일링 (절대 픽셀값 강제 고정 및 모바일 버그 완벽 차단) ---
 st.set_option("client.toolbarMode", "viewer") 
 
 st.markdown("""
@@ -42,43 +42,52 @@ st.markdown("""
     /* 기본 배경 */
     .stApp { background-color: var(--app-bg) !important; }
     
-    /* 🚨 전체 앱 넓이를 카드와 똑같은 '320px'로 완벽하게 잠금! (버튼 튀어나옴 방지) */
+    /* 🚨 앱 전체 넓이를 320px로 무조건 잠금! (카드 넓이와 100% 동일) */
     .block-container { 
+        width: 320px !important; 
+        min-width: 320px !important;
         max-width: 320px !important; 
         padding-left: 0 !important;
         padding-right: 0 !important;
         padding-top: 0.1rem !important; 
         padding-bottom: 1rem !important; 
         margin: 0 auto !important;
+        overflow-x: hidden !important;
     }
     
     /* 헤더 제거 */
     [data-testid="stHeader"], header { display: none !important; }
     
-    /* 📱 모바일 가로 레이아웃 강제 유지 (80% : 20% 비율 절대 고정) */
+    /* 📱 Streamlit의 가로 배열(Columns)을 픽셀 단위로 강제 통제 */
     div[data-testid="stHorizontalBlock"] {
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: nowrap !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-        width: 100% !important;
-        gap: 8px !important; /* 버튼 사이 간격 */
+        width: 320px !important;
+        gap: 10px !important; /* 버튼 사이 간격 딱 10px */
     }
+    
+    /* 왼쪽 컬럼 (제목 or 메인 뽑기 버튼) -> 무조건 255px */
     div[data-testid="column"]:nth-child(1) {
-        width: 80% !important;
-        flex: 0 0 80% !important;
-        min-width: 0 !important;
+        width: 255px !important;
+        min-width: 255px !important;
+        max-width: 255px !important;
+        flex: 0 0 255px !important;
+        padding: 0 !important;
     }
+    
+    /* 오른쪽 컬럼 (설정 버튼 or 닫기 버튼) -> 무조건 55px (정사각형 만들기) */
     div[data-testid="column"]:nth-child(2) {
-        width: 20% !important;
-        flex: 0 0 20% !important;
-        min-width: 0 !important;
+        width: 55px !important;
+        min-width: 55px !important;
+        max-width: 55px !important;
+        flex: 0 0 55px !important;
+        padding: 0 !important;
     }
 
-    /* 🃏 카드 및 애니메이션 크기 (320px) */
+    /* 🃏 카드 크기도 320px로 완벽 일치 */
     .poker-back, .flip-card {
-        width: 100% !important; 
+        width: 320px !important; 
         height: 520px !important;
         margin: 0 auto !important; 
     }
@@ -125,13 +134,15 @@ st.markdown("""
     .anim-shake { animation: shake 0.2s infinite; margin: 0 auto; }
     @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
     
-    /* 🎨 버튼 공통 디자인 (모바일 백화현상 완벽 제압) */
+    /* 🎨 버튼 공통 디자인 (모바일 렌더링 오류 방지) */
     button {
-        -webkit-appearance: none !important; /* 모바일 Safari 기본 스타일 무력화 */
+        -webkit-appearance: none !important; 
         appearance: none !important;
         border-radius: 15px !important; 
         font-weight: 900 !important; 
         height: 55px !important;
+        margin: 0 !important;
+        padding: 0 !important;
         transition: all 0.3s ease !important;
         display: flex !important;
         justify-content: center !important;
@@ -139,25 +150,27 @@ st.markdown("""
         border: none !important;
     }
     
-    /* 🎲 라이트모드: 메인 뽑기 버튼 (Primary) */
+    /* 🎲 메인 뽑기 버튼 (Primary) -> 길이 255px 고정 */
     button[data-testid="baseButton-primary"] {
+        width: 255px !important;
         background: linear-gradient(135deg, #FFD1BA 0%, #FFB5A7 100%) !important;
-        background-color: #FFB5A7 !important; /* 그라데이션 실패 시 대비책 */
+        background-color: #FFB5A7 !important; 
         color: #4A4A4A !important;
         font-size: 18px !important; 
         box-shadow: 0 4px 15px rgba(255, 181, 167, 0.4) !important;
     }
     
-    /* ⚙️ 라이트모드: 설정 & ✖️ 닫기 버튼 (Secondary) */
+    /* ⚙️ 설정 & ✖️ 닫기 버튼 (Secondary) -> 가로 55px, 세로 55px 정사각형 고정! (단색 적용) */
     button[data-testid="baseButton-secondary"] {
-        background: linear-gradient(135deg, #E2F0CB 0%, #B5EAD7 100%) !important;
-        background-color: #B5EAD7 !important; /* 모바일에서 하얗게 뜨는 현상 방지 */
+        width: 55px !important;
+        background-image: none !important; /* 그라데이션 제거 (모바일 하얗게 나오는 버그 원인) */
+        background-color: #B5EAD7 !important; /* 무조건 칠해지는 단색 파스텔 민트 */
         color: #4A4A4A !important;
-        font-size: 20px !important; 
+        font-size: 22px !important; /* 아이콘 크기 키움 */
         box-shadow: 0 4px 12px rgba(181, 234, 215, 0.5) !important;
     }
     
-    /* 🌙 다크모드 버튼 색상 변경 */
+    /* 🌙 다크모드 버튼 색상 변경 (Secondary 버튼 단색 유지) */
     @media (prefers-color-scheme: dark) {
         button[data-testid="baseButton-primary"] {
             background: linear-gradient(135deg, #FFAAA5 0%, #FF8B94 100%) !important;
@@ -165,8 +178,7 @@ st.markdown("""
             color: #1A1A1A !important;
         }
         button[data-testid="baseButton-secondary"] {
-            background: linear-gradient(135deg, #A8E6CF 0%, #DCEDC1 100%) !important;
-            background-color: #A8E6CF !important;
+            background-color: #A8E6CF !important; /* 다크모드용 단색 민트 */
             color: #1A1A1A !important;
         }
     }
@@ -205,18 +217,19 @@ if 'keyword' not in st.session_state: st.session_state.keyword = ""
 if 'picked_card' not in st.session_state: st.session_state.picked_card = None
 if 'trigger_shuffle' not in st.session_state: st.session_state.trigger_shuffle = False
 
-# 타이틀
+# 공통 타이틀
 st.markdown("<h1 style='text-align: center; color: var(--text-title); margin-bottom: 15px; font-size: 1.8em; white-space: nowrap;'>👨‍👧 픽미! 아빠카드 101</h1>", unsafe_allow_html=True)
 
 # ==========================================
 # ⚙️ 설정 화면
 # ==========================================
 if st.session_state.show_settings:
+    # 255px(제목) + 55px(버튼) 조합
     col_t, col_c = st.columns([4, 1])
     with col_t:
-        st.markdown("<h3 style='color: var(--text-title); margin-top:5px; margin-bottom:0;'>⚙️ 놀이 조건 설정</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='color: var(--text-title); margin-top:12px; margin-bottom:0;'>⚙️ 놀이 조건 설정</h3>", unsafe_allow_html=True)
     with col_c:
-        if st.button("✖️", type="secondary", use_container_width=True):
+        if st.button("✖️", type="secondary", key="btn_close"):
             st.session_state.show_settings = False
             st.rerun()
             
@@ -246,7 +259,7 @@ else:
             main_area.error("데이터가 없습니다.")
         else:
             for _ in range(10): 
-                # 문구 삭제됨 (오직 카드만 흔들림)
+                # 텍스트 모두 지우고 애니메이션만 표시
                 anim_html = '<div style="text-align: center; width: 100%;"><div class="poker-back anim-shake"><div style="font-size: 85px; margin: 0 auto;">🃏</div></div></div>'
                 main_area.markdown(anim_html, unsafe_allow_html=True)
                 time.sleep(0.08)
@@ -281,7 +294,7 @@ else:
                 st.rerun()
 
     if st.session_state.picked_card is None:
-        # 문구 삭제됨
+        # 문구 없이 뒷면만 깔끔하게 표시
         main_area.markdown('<div style="text-align: center; width: 100%;"><div class="poker-back"><div style="font-size: 85px; margin: 0 auto;">🃏</div></div></div>', unsafe_allow_html=True)
     elif st.session_state.picked_card == "empty":
         main_area.warning("⚠️ 조건에 맞는 놀이가 없어요. ⚙️ 설정에서 조건을 변경해주세요!")
@@ -316,15 +329,15 @@ else:
         """
         main_area.markdown(html_card, unsafe_allow_html=True)
 
-    # 🎯 하단 버튼 영역 
+    # 🎯 하단 버튼 영역 (255px + 55px = 320px 완벽 조립)
     st.markdown("<br>", unsafe_allow_html=True)
     b_main, b_sub = st.columns([4, 1]) 
     with b_main:
         lbl = "🎲 Pick Me!" if st.session_state.picked_card is None else "🔄 다시 뽑기!"
-        if st.button(lbl, type="primary", use_container_width=True):
+        if st.button(lbl, type="primary", key="btn_main"):
             st.session_state.trigger_shuffle = True
             st.rerun()
     with b_sub:
-        if st.button("⚙️", type="secondary", use_container_width=True):
+        if st.button("⚙️", type="secondary", key="btn_setting"):
             st.session_state.show_settings = True
             st.rerun()
