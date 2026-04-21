@@ -9,7 +9,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# --- 2. CSS 스타일링 (모바일 Stacking 버그 완벽 차단) ---
+# --- 2. CSS 스타일링 (핵폭탄급 모바일 세로모드 강제고정) ---
 st.set_option("client.toolbarMode", "viewer") 
 
 st.markdown("""
@@ -44,59 +44,53 @@ st.markdown("""
     
     /* 🚨 앱 전체 컨테이너 */
     .block-container { 
+        width: 360px !important;
+        min-width: 360px !important;
         max-width: 360px !important; 
         padding-left: 0 !important;
         padding-right: 0 !important;
         padding-top: 0.1rem !important; 
         padding-bottom: 1rem !important; 
         margin: 0 auto !important;
-        overflow: visible !important; 
+        overflow-x: hidden !important; 
     }
     
     /* 헤더 제거 */
     [data-testid="stHeader"], header { display: none !important; }
     
-    /* 📱 무적의 레이아웃: 컬럼(버튼/제목 배치)을 정확히 320px로 잠금! */
-    div[data-testid="stHorizontalBlock"] {
-        width: 320px !important;
-        max-width: 320px !important;
-        margin: 0 auto !important; 
+    /* 🚨🔥 NUCLEAR OPTION: #root ID를 사용해 Streamlit의 모바일 자동배열 시스템을 완전히 짓밟음 🔥🚨 */
+    /* 가로 배열 박스를 320px로 무조건 잠금 */
+    #root div[data-testid="stHorizontalBlock"] {
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: nowrap !important;
-        align-items: center !important;
-        gap: 10px !important; 
+        width: 320px !important; 
+        min-width: 320px !important;
+        max-width: 320px !important;
+        justify-content: space-between !important; 
+        gap: 10px !important;
+        margin: 0 auto !important;
         padding: 0 !important;
     }
     
-    /* 첫 번째 칸 (메인버튼 / 제목) = 255px 고정 */
-    div[data-testid="column"]:nth-child(1) {
+    /* 첫 번째 칸 (메인버튼 / 제목) = 255px 절대 고정! 모바일 세로모드에서도 안 깨짐 */
+    #root div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:first-child {
         width: 255px !important;
         min-width: 255px !important;
         max-width: 255px !important;
         flex: 0 0 255px !important;
+        margin: 0 !important;
         padding: 0 !important;
     }
     
-    /* 두 번째 칸 (설정버튼 / 닫기버튼) = 55px 고정 (정사각형) */
-    div[data-testid="column"]:nth-child(2) {
+    /* 두 번째 칸 (설정버튼 / 닫기버튼) = 55px 정사각형 절대 고정! */
+    #root div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:last-child {
         width: 55px !important;
         min-width: 55px !important;
         max-width: 55px !important;
         flex: 0 0 55px !important;
+        margin: 0 !important;
         padding: 0 !important;
-    }
-
-    /* 🚨🔥 핵심 해결책: Streamlit의 모바일 세로 쌓임(Stacking) 강제 오지랖 무력화 🔥🚨 */
-    @media (max-width: 768px) {
-        div[data-testid="stHorizontalBlock"] {
-            flex-direction: row !important; /* 모바일에서도 무조건 가로 유지! */
-            flex-wrap: nowrap !important;
-        }
-        div[data-testid="column"]:nth-child(1), 
-        div[data-testid="column"]:nth-child(2) {
-            margin-top: 0 !important; /* 세로로 쌓일 때 생기는 쓸데없는 여백 제거 */
-        }
     }
 
     /* 🃏 카드 및 애니메이션 크기 (320px) */
@@ -147,13 +141,12 @@ st.markdown("""
     @keyframes shake { 0%, 100% { transform: rotate(0deg) scale(1); } 25% { transform: rotate(-8deg) scale(1.05); } 75% { transform: rotate(8deg) scale(1.05); } }
     .anim-shake { animation: shake 0.2s infinite; margin: 0 auto; }
     
-    /* 🎨 버튼 공통 디자인 설정 */
-    div[data-testid="stButton"] { width: 100% !important; padding: 0 !important; margin: 0 !important; }
+    /* 🎨 버튼 공통 디자인 (버튼 자체에도 크기 강제 박제) */
+    #root div[data-testid="stButton"] { width: 100% !important; padding: 0 !important; margin: 0 !important; }
     
-    button[kind="primary"], button[kind="secondary"] {
+    #root button[kind="primary"], #root button[kind="secondary"] {
         -webkit-appearance: none !important; 
         appearance: none !important;
-        width: 100% !important;
         height: 55px !important;
         border-radius: 15px !important;
         font-weight: 900 !important;
@@ -164,8 +157,11 @@ st.markdown("""
         align-items: center !important;
     }
     
-    /* 🎲 뽑기 버튼 (Primary) */
-    button[kind="primary"] {
+    /* 🎲 뽑기 버튼 (Primary) -> 크기 255px 박제 */
+    #root button[kind="primary"] {
+        width: 255px !important;
+        min-width: 255px !important;
+        max-width: 255px !important;
         background: linear-gradient(135deg, #FFD1BA 0%, #FFB5A7 100%) !important;
         background-color: #FFB5A7 !important; 
         color: #4A4A4A !important;
@@ -173,8 +169,12 @@ st.markdown("""
         box-shadow: 0 4px 15px rgba(255, 181, 167, 0.4) !important;
     }
     
-    /* ⚙️ 설정 & ✖️ 닫기 버튼 (Secondary) */
-    button[kind="secondary"] {
+    /* ⚙️ 설정 & ✖️ 닫기 버튼 (Secondary) -> 크기 55px 정사각형 박제 */
+    #root button[kind="secondary"] {
+        width: 55px !important;
+        min-width: 55px !important;
+        max-width: 55px !important;
+        padding: 0 !important; 
         background: #B5EAD7 !important; 
         background-color: #B5EAD7 !important; 
         color: #4A4A4A !important;
@@ -184,13 +184,13 @@ st.markdown("""
     
     /* 🌙 다크모드 버튼 색상 유지 */
     @media (prefers-color-scheme: dark) {
-        button[kind="primary"] {
+        #root button[kind="primary"] {
             background: linear-gradient(135deg, #FFAAA5 0%, #FF8B94 100%) !important;
             background-color: #FF8B94 !important;
             color: #1A1A1A !important;
             box-shadow: 0 4px 15px rgba(255, 139, 148, 0.4) !important;
         }
-        button[kind="secondary"] {
+        #root button[kind="secondary"] {
             background: #A8E6CF !important;
             background-color: #A8E6CF !important; 
             color: #1A1A1A !important;
@@ -198,7 +198,7 @@ st.markdown("""
         }
     }
     
-    button[kind="primary"]:hover, button[kind="secondary"]:hover { 
+    #root button[kind="primary"]:hover, #root button[kind="secondary"]:hover { 
         transform: translateY(-2px) !important; 
         filter: brightness(1.05); 
     }
@@ -242,6 +242,7 @@ st.markdown("<h1 style='text-align: center; color: var(--text-title); margin-bot
 # ⚙️ 설정 화면
 # ==========================================
 if st.session_state.show_settings:
+    # 컬럼 비율(비율은 무시되고 CSS의 255px + 55px이 강제 적용됨)
     col_t, col_c = st.columns([4, 1])
     with col_t:
         st.markdown("<h3 style='color: var(--text-title); margin-top:12px; margin-bottom:0;'>⚙️ 놀이 조건 설정</h3>", unsafe_allow_html=True)
@@ -344,7 +345,7 @@ else:
         """
         main_area.markdown(html_card, unsafe_allow_html=True)
 
-    # 🎯 하단 버튼 영역
+    # 🎯 하단 버튼 영역 (무적의 강제 고정 255px + 55px)
     st.markdown("<br>", unsafe_allow_html=True)
     b_main, b_sub = st.columns([4, 1]) 
     with b_main:
