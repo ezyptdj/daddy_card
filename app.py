@@ -9,7 +9,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# --- 2. CSS 스타일링 (모바일 레이아웃 강제 고정 및 스트림릿 버그 완벽 차단) ---
+# --- 2. CSS 스타일링 (모바일 Stacking 버그 완벽 차단) ---
 st.set_option("client.toolbarMode", "viewer") 
 
 st.markdown("""
@@ -42,7 +42,7 @@ st.markdown("""
     /* 기본 배경 */
     .stApp { background-color: var(--app-bg) !important; }
     
-    /* 🚨 앱 전체 컨테이너 (여유를 두어 카드 흔들림 잘림 방지) */
+    /* 🚨 앱 전체 컨테이너 */
     .block-container { 
         max-width: 360px !important; 
         padding-left: 0 !important;
@@ -58,14 +58,14 @@ st.markdown("""
     
     /* 📱 무적의 레이아웃: 컬럼(버튼/제목 배치)을 정확히 320px로 잠금! */
     div[data-testid="stHorizontalBlock"] {
-        width: 320px !important; /* 카드 사이즈와 100% 동일 */
+        width: 320px !important;
         max-width: 320px !important;
-        margin: 0 auto !important; /* 강제 가운데 정렬 */
+        margin: 0 auto !important; 
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: nowrap !important;
         align-items: center !important;
-        gap: 10px !important; /* 버튼 사이 여백 딱 10px */
+        gap: 10px !important; 
         padding: 0 !important;
     }
     
@@ -87,7 +87,19 @@ st.markdown("""
         padding: 0 !important;
     }
 
-    /* 🃏 카드 및 애니메이션 크기 (위의 버튼들과 똑같이 320px) */
+    /* 🚨🔥 핵심 해결책: Streamlit의 모바일 세로 쌓임(Stacking) 강제 오지랖 무력화 🔥🚨 */
+    @media (max-width: 768px) {
+        div[data-testid="stHorizontalBlock"] {
+            flex-direction: row !important; /* 모바일에서도 무조건 가로 유지! */
+            flex-wrap: nowrap !important;
+        }
+        div[data-testid="column"]:nth-child(1), 
+        div[data-testid="column"]:nth-child(2) {
+            margin-top: 0 !important; /* 세로로 쌓일 때 생기는 쓸데없는 여백 제거 */
+        }
+    }
+
+    /* 🃏 카드 및 애니메이션 크기 (320px) */
     .poker-back, .flip-card {
         width: 320px !important; 
         height: 520px !important;
@@ -135,7 +147,7 @@ st.markdown("""
     @keyframes shake { 0%, 100% { transform: rotate(0deg) scale(1); } 25% { transform: rotate(-8deg) scale(1.05); } 75% { transform: rotate(8deg) scale(1.05); } }
     .anim-shake { animation: shake 0.2s infinite; margin: 0 auto; }
     
-    /* 🎨 Streamlit의 악질적인 버튼 덮어쓰기 완전 제압 (kind 속성 다이렉트 타겟팅) */
+    /* 🎨 버튼 공통 디자인 설정 */
     div[data-testid="stButton"] { width: 100% !important; padding: 0 !important; margin: 0 !important; }
     
     button[kind="primary"], button[kind="secondary"] {
@@ -155,7 +167,7 @@ st.markdown("""
     /* 🎲 뽑기 버튼 (Primary) */
     button[kind="primary"] {
         background: linear-gradient(135deg, #FFD1BA 0%, #FFB5A7 100%) !important;
-        background-color: #FFB5A7 !important; /* 그라데이션 실패 시 대비책 */
+        background-color: #FFB5A7 !important; 
         color: #4A4A4A !important;
         font-size: 18px !important; 
         box-shadow: 0 4px 15px rgba(255, 181, 167, 0.4) !important;
@@ -163,14 +175,14 @@ st.markdown("""
     
     /* ⚙️ 설정 & ✖️ 닫기 버튼 (Secondary) */
     button[kind="secondary"] {
-        background: #B5EAD7 !important; /* 투명도/그라데이션 제거, 강력한 단색 고정 */
+        background: #B5EAD7 !important; 
         background-color: #B5EAD7 !important; 
         color: #4A4A4A !important;
         font-size: 22px !important; 
         box-shadow: 0 4px 12px rgba(181, 234, 215, 0.5) !important;
     }
     
-    /* 🌙 다크모드 버튼 강제 색상 유지 (Streamlit의 어두운 회색 덮어쓰기 무력화) */
+    /* 🌙 다크모드 버튼 색상 유지 */
     @media (prefers-color-scheme: dark) {
         button[kind="primary"] {
             background: linear-gradient(135deg, #FFAAA5 0%, #FF8B94 100%) !important;
@@ -230,12 +242,10 @@ st.markdown("<h1 style='text-align: center; color: var(--text-title); margin-bot
 # ⚙️ 설정 화면
 # ==========================================
 if st.session_state.show_settings:
-    # 컬럼 비율 무시하고 CSS가 255px + 55px로 잡아줌
     col_t, col_c = st.columns([4, 1])
     with col_t:
         st.markdown("<h3 style='color: var(--text-title); margin-top:12px; margin-bottom:0;'>⚙️ 놀이 조건 설정</h3>", unsafe_allow_html=True)
     with col_c:
-        # 🚨 여기에 use_container_width=True 추가!
         if st.button("✖️", type="secondary", use_container_width=True, key="btn_close"):
             st.session_state.show_settings = False
             st.rerun()
@@ -266,7 +276,6 @@ else:
             main_area.error("데이터가 없습니다.")
         else:
             for _ in range(10): 
-                # 흔들릴 때 밑에 글씨 안 나옴
                 anim_html = '<div style="text-align: center; width: 100%;"><div class="poker-back anim-shake"><div style="font-size: 85px; margin: 0 auto;">🃏</div></div></div>'
                 main_area.markdown(anim_html, unsafe_allow_html=True)
                 time.sleep(0.08)
@@ -335,17 +344,15 @@ else:
         """
         main_area.markdown(html_card, unsafe_allow_html=True)
 
-    # 🎯 하단 버튼 영역 (CSS가 255px + 10px + 55px = 320px로 완벽 조립해 줌)
+    # 🎯 하단 버튼 영역
     st.markdown("<br>", unsafe_allow_html=True)
     b_main, b_sub = st.columns([4, 1]) 
     with b_main:
         lbl = "🎲 Pick Me!" if st.session_state.picked_card is None else "🔄 다시 뽑기!"
-        # 🚨 여기에 use_container_width=True 다시 추가 완료!
         if st.button(lbl, type="primary", use_container_width=True, key="btn_main"):
             st.session_state.trigger_shuffle = True
             st.rerun()
     with b_sub:
-        # 🚨 여기에도 추가 완료!
         if st.button("⚙️", type="secondary", use_container_width=True, key="btn_setting"):
             st.session_state.show_settings = True
             st.rerun()
