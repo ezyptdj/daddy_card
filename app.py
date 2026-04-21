@@ -52,17 +52,16 @@ st.markdown("""
         overflow-x: hidden !important; 
     }
     
-    /* 🚨 스트림릿 기본 UI & 클라우드 워터마크(깃허브) 끈질긴 추적 암살! */
-    [data-testid="stHeader"], header { display: none !important; visibility: hidden !important; }
-    footer { display: none !important; visibility: hidden !important; }
-    #MainMenu { display: none !important; visibility: hidden !important; }
-    [data-testid="stToolbar"] { display: none !important; visibility: hidden !important; }
+    /* 🚨 스트림릿 기본 UI & 클라우드 워터마크 완벽 제거 */
+    [data-testid="stHeader"], header { display: none !important; }
+    footer { display: none !important; }
+    #MainMenu { display: none !important; }
+    [data-testid="stToolbar"] { display: none !important; }
     
-    /* 우측 하단 깃허브/스트림릿 강제 뱃지 원천 차단 (이름이 바뀌어도 잡아냄) */
+    /* 우측 하단 Manage app 버튼 & 구형 뱃지 제거 */
+    [data-testid="manage-app-button"] { display: none !important; visibility: hidden !important; }
     div[class^="viewerBadge"] { display: none !important; }
     div[class*="viewerBadge"] { display: none !important; }
-    .viewerBadge_container { display: none !important; }
-            
     
     /* 하단 버튼 영역 그리드 (245px + 65px) */
     #root div[data-testid="stHorizontalBlock"] {
