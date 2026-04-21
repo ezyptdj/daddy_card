@@ -245,9 +245,19 @@ if 'use_joker' not in st.session_state: st.session_state.use_joker = True # 🚨
 if not st.session_state.intro_dismissed:
     st.markdown("""<div style="width: 320px; margin: 0 auto; text-align: center; padding: 40px 20px; background: var(--card-front-bg); border-radius: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); border: 4px solid var(--border-color); margin-top: 20px;">
 <div class="crown-icon">👑</div><h2 style="color: var(--text-title); margin-bottom: 20px; font-weight: 900; line-height: 1.3;">Pick Me!<br>아빠카드 101</h2>
-<p style="color: var(--text-main); line-height: 1.6; font-size: 15px; font-weight: bold; word-break: keep-all;">"국민 아빠 프로듀서님!<br>아이의 웃음을 책임질 101개의<br>레전드 놀이가 기다립니다."</p></div>""", unsafe_allow_html=True)
+<p style="color: var(--text-main); line-height: 1.6; font-size: 15px; font-weight: bold; word-break: keep-all;">
+            "국민 아빠 프로듀서님!<br>
+            아이의 웃음을 책임질 101개의<br>레전드 놀이가 기다리고 있습니다."
+        </p>
+        <p style="color: var(--text-muted); font-size: 13.5px; margin-top: 20px; word-break: keep-all;">
+            오늘 밤, 아이의 꿀잠을 이끌어낼<br>
+            <b>최종 데뷔조(1-Pick) 놀이</b>는 무엇일까요?<br>
+            당신의 놀이에 픽미업 하세요! 👇
+        </p>
+                </div>""",
+              unsafe_allow_html=True)
     st.markdown("<div style='width: 320px; margin: 20px auto;'>", unsafe_allow_html=True)
-    if st.button("🎤 오디션장 입장하기", type="primary", use_container_width=True, key="btn_intro"):
+    if st.button("🎤 거실(오디션장)로 입장하기", type="primary", use_container_width=True, key="btn_intro"):
         st.session_state.intro_dismissed = True
         st.rerun()
     st.markdown("</div>", unsafe_allow_html=True)
