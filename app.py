@@ -9,7 +9,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# --- 2. CSS 스타일링 (핵폭탄급 모바일 세로모드 강제고정) ---
+# --- 2. CSS 스타일링 (버튼 멀어짐 완벽 해결 - 중앙 결속) ---
 st.set_option("client.toolbarMode", "viewer") 
 
 st.markdown("""
@@ -42,7 +42,7 @@ st.markdown("""
     /* 기본 배경 */
     .stApp { background-color: var(--app-bg) !important; }
     
-    /* 🚨 앱 전체 컨테이너 */
+    /* 🚨 앱 전체 컨테이너 (여유를 두어 카드 흔들림 잘림 방지: 360px) */
     .block-container { 
         width: 360px !important;
         min-width: 360px !important;
@@ -58,22 +58,21 @@ st.markdown("""
     /* 헤더 제거 */
     [data-testid="stHeader"], header { display: none !important; }
     
-    /* 🚨🔥 NUCLEAR OPTION: #root ID를 사용해 Streamlit의 모바일 자동배열 시스템을 완전히 짓밟음 🔥🚨 */
-    /* 가로 배열 박스를 320px로 무조건 잠금 */
+    /* 🚨🔥 핵심 해결책: 버튼이 멀어지지 않도록 무조건 중앙(center)으로 묶고 간격 10px 고정! 🔥🚨 */
     #root div[data-testid="stHorizontalBlock"] {
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: nowrap !important;
-        width: 320px !important; 
+        width: 320px !important; /* 카드 넓이와 동일 */
         min-width: 320px !important;
         max-width: 320px !important;
-        justify-content: space-between !important; 
-        gap: 10px !important;
-        margin: 0 auto !important;
+        justify-content: center !important; /* 👈 space-between에서 center로 변경! */
+        gap: 10px !important; /* 👈 무조건 10px만 떨어지게 강제 결속! */
+        margin: 0 auto !important; /* 화면 중앙 정렬 */
         padding: 0 !important;
     }
     
-    /* 첫 번째 칸 (메인버튼 / 제목) = 255px 절대 고정! 모바일 세로모드에서도 안 깨짐 */
+    /* 첫 번째 칸 (메인버튼 / 제목) = 255px 절대 고정 */
     #root div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:first-child {
         width: 255px !important;
         min-width: 255px !important;
@@ -83,7 +82,7 @@ st.markdown("""
         padding: 0 !important;
     }
     
-    /* 두 번째 칸 (설정버튼 / 닫기버튼) = 55px 정사각형 절대 고정! */
+    /* 두 번째 칸 (설정버튼 / 닫기버튼) = 55px 정사각형 절대 고정 */
     #root div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:last-child {
         width: 55px !important;
         min-width: 55px !important;
@@ -141,7 +140,7 @@ st.markdown("""
     @keyframes shake { 0%, 100% { transform: rotate(0deg) scale(1); } 25% { transform: rotate(-8deg) scale(1.05); } 75% { transform: rotate(8deg) scale(1.05); } }
     .anim-shake { animation: shake 0.2s infinite; margin: 0 auto; }
     
-    /* 🎨 버튼 공통 디자인 (버튼 자체에도 크기 강제 박제) */
+    /* 🎨 버튼 공통 디자인 */
     #root div[data-testid="stButton"] { width: 100% !important; padding: 0 !important; margin: 0 !important; }
     
     #root button[kind="primary"], #root button[kind="secondary"] {
@@ -242,7 +241,6 @@ st.markdown("<h1 style='text-align: center; color: var(--text-title); margin-bot
 # ⚙️ 설정 화면
 # ==========================================
 if st.session_state.show_settings:
-    # 컬럼 비율(비율은 무시되고 CSS의 255px + 55px이 강제 적용됨)
     col_t, col_c = st.columns([4, 1])
     with col_t:
         st.markdown("<h3 style='color: var(--text-title); margin-top:12px; margin-bottom:0;'>⚙️ 놀이 조건 설정</h3>", unsafe_allow_html=True)
@@ -345,7 +343,7 @@ else:
         """
         main_area.markdown(html_card, unsafe_allow_html=True)
 
-    # 🎯 하단 버튼 영역 (무적의 강제 고정 255px + 55px)
+    # 🎯 하단 버튼 영역 
     st.markdown("<br>", unsafe_allow_html=True)
     b_main, b_sub = st.columns([4, 1]) 
     with b_main:
