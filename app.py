@@ -52,7 +52,14 @@ st.markdown("""
         overflow-x: hidden !important; 
     }
     
-    [data-testid="stHeader"], header { display: none !important; }
+    /* 🚨 스트림릿 기본 UI (헤더, 하단 워터마크, 깃허브 로고 등) 완벽 암살! */
+    [data-testid="stHeader"], header { display: none !important; } /* 상단 여백/헤더 제거 */
+    footer { display: none !important; } /* 하단 Made with Streamlit 제거 */
+    .stDeployButton { display: none !important; } /* 클라우드 배포 버튼 제거 */
+    [data-testid="stToolbar"] { display: none !important; } /* 우측 상단 툴바 메뉴 제거 */
+    [data-testid="stStatusWidget"] { display: none !important; } /* 우측 하단 깃허브/왕관 로고 제거 */
+    #MainMenu { display: none !important; } /* 햄버거 메뉴 제거 */
+            
     
     /* 하단 버튼 영역 그리드 (245px + 65px) */
     #root div[data-testid="stHorizontalBlock"] {
