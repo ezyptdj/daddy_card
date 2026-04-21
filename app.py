@@ -9,7 +9,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# --- 2. CSS 스타일링 (버그 픽스 및 구조적 타겟팅 적용) ---
+# --- 2. CSS 스타일링 (모바일 레이아웃 강제 고정 및 스트림릿 버그 완벽 차단) ---
 st.set_option("client.toolbarMode", "viewer") 
 
 st.markdown("""
@@ -42,7 +42,7 @@ st.markdown("""
     /* 기본 배경 */
     .stApp { background-color: var(--app-bg) !important; }
     
-    /* 🚨 앱 전체 컨테이너 (카드가 흔들릴 수 있게 360px로 여유 확보, 잘림 방지) */
+    /* 🚨 앱 전체 컨테이너 (여유를 두어 카드 흔들림 잘림 방지) */
     .block-container { 
         max-width: 360px !important; 
         padding-left: 0 !important;
@@ -50,25 +50,44 @@ st.markdown("""
         padding-top: 0.1rem !important; 
         padding-bottom: 1rem !important; 
         margin: 0 auto !important;
-        overflow: visible !important; /* 카드 흔들릴 때 잘리는 현상 완벽 방지 */
+        overflow: visible !important; 
     }
     
     /* 헤더 제거 */
     [data-testid="stHeader"], header { display: none !important; }
     
-    /* 📱 모바일 버튼 세로 쌓임 방지 및 8:2 비율 강제 유지 */
+    /* 📱 무적의 레이아웃: 컬럼(버튼/제목 배치)을 정확히 320px로 잠금! */
     div[data-testid="stHorizontalBlock"] {
+        width: 320px !important; /* 카드 사이즈와 100% 동일 */
+        max-width: 320px !important;
+        margin: 0 auto !important; /* 강제 가운데 정렬 */
         display: flex !important;
         flex-direction: row !important;
         flex-wrap: nowrap !important;
         align-items: center !important;
-        gap: 10px !important; /* 메인 버튼과 설정 버튼 사이 간격 */
+        gap: 10px !important; /* 버튼 사이 여백 딱 10px */
+        padding: 0 !important;
     }
-    div[data-testid="column"] {
-        min-width: 0 !important; /* Streamlit의 기본 여백 간섭 무력화 */
+    
+    /* 첫 번째 칸 (메인버튼 / 제목) = 255px 고정 */
+    div[data-testid="column"]:nth-child(1) {
+        width: 255px !important;
+        min-width: 255px !important;
+        max-width: 255px !important;
+        flex: 0 0 255px !important;
+        padding: 0 !important;
+    }
+    
+    /* 두 번째 칸 (설정버튼 / 닫기버튼) = 55px 고정 (정사각형) */
+    div[data-testid="column"]:nth-child(2) {
+        width: 55px !important;
+        min-width: 55px !important;
+        max-width: 55px !important;
+        flex: 0 0 55px !important;
+        padding: 0 !important;
     }
 
-    /* 🃏 카드 및 애니메이션 크기 (320px 고정) */
+    /* 🃏 카드 및 애니메이션 크기 (위의 버튼들과 똑같이 320px) */
     .poker-back, .flip-card {
         width: 320px !important; 
         height: 520px !important;
@@ -116,50 +135,61 @@ st.markdown("""
     @keyframes shake { 0%, 100% { transform: rotate(0deg) scale(1); } 25% { transform: rotate(-8deg) scale(1.05); } 75% { transform: rotate(8deg) scale(1.05); } }
     .anim-shake { animation: shake 0.2s infinite; margin: 0 auto; }
     
-    /* 🎨 무적의 버튼 디자인 타겟팅 (클래스명 변경 무시) */
-    /* 앱 내의 모든 버튼 형태 기본 정의 */
-    div[data-testid="stButton"] > button {
+    /* 🎨 Streamlit의 악질적인 버튼 덮어쓰기 완전 제압 (kind 속성 다이렉트 타겟팅) */
+    div[data-testid="stButton"] { width: 100% !important; padding: 0 !important; margin: 0 !important; }
+    
+    button[kind="primary"], button[kind="secondary"] {
+        -webkit-appearance: none !important; 
+        appearance: none !important;
         width: 100% !important;
         height: 55px !important;
         border-radius: 15px !important;
         font-weight: 900 !important;
         border: none !important;
-        -webkit-appearance: none !important;
-        appearance: none !important;
         transition: all 0.3s ease !important;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
     }
     
-    /* 🎲 첫 번째 칸의 버튼 (Pick Me) 색상 강제 지정 */
-    div[data-testid="column"]:nth-of-type(1) div[data-testid="stButton"] > button {
+    /* 🎲 뽑기 버튼 (Primary) */
+    button[kind="primary"] {
         background: linear-gradient(135deg, #FFD1BA 0%, #FFB5A7 100%) !important;
-        background-color: #FFB5A7 !important; 
+        background-color: #FFB5A7 !important; /* 그라데이션 실패 시 대비책 */
         color: #4A4A4A !important;
         font-size: 18px !important; 
         box-shadow: 0 4px 15px rgba(255, 181, 167, 0.4) !important;
     }
     
-    /* ⚙️ 두 번째 칸의 버튼 (설정 및 닫기) 색상 강제 지정 */
-    div[data-testid="column"]:nth-of-type(2) div[data-testid="stButton"] > button {
-        background-color: #B5EAD7 !important; /* 무조건 발색되는 단색 민트 */
+    /* ⚙️ 설정 & ✖️ 닫기 버튼 (Secondary) */
+    button[kind="secondary"] {
+        background: #B5EAD7 !important; /* 투명도/그라데이션 제거, 강력한 단색 고정 */
+        background-color: #B5EAD7 !important; 
         color: #4A4A4A !important;
         font-size: 22px !important; 
         box-shadow: 0 4px 12px rgba(181, 234, 215, 0.5) !important;
     }
     
-    /* 🌙 다크모드 전용 버튼 색상 매핑 */
+    /* 🌙 다크모드 버튼 강제 색상 유지 (Streamlit의 어두운 회색 덮어쓰기 무력화) */
     @media (prefers-color-scheme: dark) {
-        div[data-testid="column"]:nth-of-type(1) div[data-testid="stButton"] > button {
+        button[kind="primary"] {
             background: linear-gradient(135deg, #FFAAA5 0%, #FF8B94 100%) !important;
             background-color: #FF8B94 !important;
             color: #1A1A1A !important;
+            box-shadow: 0 4px 15px rgba(255, 139, 148, 0.4) !important;
         }
-        div[data-testid="column"]:nth-of-type(2) div[data-testid="stButton"] > button {
+        button[kind="secondary"] {
+            background: #A8E6CF !important;
             background-color: #A8E6CF !important; 
             color: #1A1A1A !important;
+            box-shadow: 0 4px 12px rgba(168, 230, 207, 0.4) !important;
         }
     }
     
-    div[data-testid="stButton"] > button:hover { transform: translateY(-2px) !important; filter: brightness(1.05); }
+    button[kind="primary"]:hover, button[kind="secondary"]:hover { 
+        transform: translateY(-2px) !important; 
+        filter: brightness(1.05); 
+    }
     
 </style>
 """, unsafe_allow_html=True)
@@ -200,11 +230,12 @@ st.markdown("<h1 style='text-align: center; color: var(--text-title); margin-bot
 # ⚙️ 설정 화면
 # ==========================================
 if st.session_state.show_settings:
-    col_t, col_c = st.columns([4.2, 1])
+    # 컬럼 비율 무시하고 CSS가 255px + 55px로 잡아줌
+    col_t, col_c = st.columns([4, 1])
     with col_t:
         st.markdown("<h3 style='color: var(--text-title); margin-top:12px; margin-bottom:0;'>⚙️ 놀이 조건 설정</h3>", unsafe_allow_html=True)
     with col_c:
-        if st.button("✖️", key="btn_close"):
+        if st.button("✖️", type="secondary", key="btn_close"):
             st.session_state.show_settings = False
             st.rerun()
             
@@ -234,7 +265,7 @@ else:
             main_area.error("데이터가 없습니다.")
         else:
             for _ in range(10): 
-                # 흔들릴 때 밑에 글씨 전혀 안 나오게 삭제
+                # 흔들릴 때 밑에 글씨 안 나옴
                 anim_html = '<div style="text-align: center; width: 100%;"><div class="poker-back anim-shake"><div style="font-size: 85px; margin: 0 auto;">🃏</div></div></div>'
                 main_area.markdown(anim_html, unsafe_allow_html=True)
                 time.sleep(0.08)
@@ -269,7 +300,6 @@ else:
                 st.rerun()
 
     if st.session_state.picked_card is None:
-        # 최초 로딩 시 밑에 글씨 전혀 안 나오게 삭제
         main_area.markdown('<div style="text-align: center; width: 100%;"><div class="poker-back"><div style="font-size: 85px; margin: 0 auto;">🃏</div></div></div>', unsafe_allow_html=True)
     elif st.session_state.picked_card == "empty":
         main_area.warning("⚠️ 조건에 맞는 놀이가 없어요. ⚙️ 설정에서 조건을 변경해주세요!")
@@ -304,15 +334,15 @@ else:
         """
         main_area.markdown(html_card, unsafe_allow_html=True)
 
-    # 🎯 하단 버튼 영역 (st.columns 분할 사용. PC/모바일 모두 8:2 비율로 꽉 차게 조립됨)
+    # 🎯 하단 버튼 영역 (CSS가 255px + 10px + 55px = 320px로 완벽 조립해 줌)
     st.markdown("<br>", unsafe_allow_html=True)
-    b_main, b_sub = st.columns([4.2, 1]) 
+    b_main, b_sub = st.columns([4, 1]) 
     with b_main:
         lbl = "🎲 Pick Me!" if st.session_state.picked_card is None else "🔄 다시 뽑기!"
-        if st.button(lbl, key="btn_main"):
+        if st.button(lbl, type="primary", key="btn_main"):
             st.session_state.trigger_shuffle = True
             st.rerun()
     with b_sub:
-        if st.button("⚙️", key="btn_setting"):
+        if st.button("⚙️", type="secondary", key="btn_setting"):
             st.session_state.show_settings = True
             st.rerun()
