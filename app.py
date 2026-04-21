@@ -9,7 +9,7 @@ st.set_page_config(
     layout="centered"
 )
 
-# --- 2. CSS 스타일링 (80% : 20% 반응형 완벽 고정) ---
+# --- 2. CSS 스타일링 (CSS Grid로 절대 안 깨지는 레이아웃 구축) ---
 st.set_option("client.toolbarMode", "viewer") 
 
 st.markdown("""
@@ -42,7 +42,7 @@ st.markdown("""
     /* 기본 배경 */
     .stApp { background-color: var(--app-bg) !important; }
     
-    /* 🚨 앱 전체 컨테이너 (유연하게 100% 차지하되 최대 360px) */
+    /* 🚨 앱 전체 컨테이너 넓이 잠금 */
     .block-container { 
         width: 100% !important;
         max-width: 360px !important; 
@@ -57,42 +57,31 @@ st.markdown("""
     /* 헤더 제거 */
     [data-testid="stHeader"], header { display: none !important; }
     
-    /* 🚨🔥 핵심 해결책: 80% / 20% 반응형 비율 강제 고정 🔥🚨 */
-    /* 가로 배열 박스를 카드와 동일하게 최대 320px로 제한하고 100% 반응형으로 설정 */
+    /* 🚨🔥 궁극의 해결책: CSS GRID로 바둑판처럼 공간을 강제로 쪼개버림 🔥🚨 */
     #root div[data-testid="stHorizontalBlock"] {
-        display: flex !important;
-        flex-direction: row !important;
-        flex-wrap: nowrap !important;
-        width: 100% !important; 
-        max-width: 320px !important;
-        justify-content: space-between !important; 
-        gap: 8px !important; /* 버튼 사이 여백 */
+        display: grid !important;
+        /* 왼쪽은 남는 공간 꽉 채우기(1fr), 오른쪽은 무조건 55px 고정 */
+        grid-template-columns: 1fr 55px !important; 
+        gap: 10px !important; /* 버튼 사이 10px 간격 */
+        width: 100% !important;
+        max-width: 320px !important; /* 전체 넓이는 카드와 동일하게 320px */
         margin: 0 auto !important;
-        padding: 0 10px !important; /* 화면이 너무 작을 때 좌우 여유 확보 */
-        box-sizing: border-box !important;
-    }
-    
-    /* 첫 번째 칸 (메인버튼) = 정확히 80% (여백 계산) */
-    #root div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:first-child {
-        width: calc(80% - 4px) !important;
-        flex: 0 0 calc(80% - 4px) !important;
-        margin: 0 !important;
         padding: 0 !important;
     }
     
-    /* 두 번째 칸 (설정버튼) = 정확히 20% (여백 계산) */
-    #root div[data-testid="stHorizontalBlock"] > div[data-testid="column"]:last-child {
-        width: calc(20% - 4px) !important;
-        flex: 0 0 calc(20% - 4px) !important;
+    /* Grid 안의 컬럼들은 내부 설정 무시하고 무조건 꽉 참 */
+    #root div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
+        width: 100% !important;
+        min-width: 0 !important;
         margin: 0 !important;
         padding: 0 !important;
     }
 
-    /* 🐱‍🏍 카드 및 애니메이션 크기 (반응형 100%, 최대 300px) */
+    /* 🥷 카드 및 애니메이션 크기 (320px) */
     .poker-back, .flip-card {
-        width: calc(100% - 20px) !important; /* 좌우 10px씩 여백 */
-        max-width: 300px !important; 
-        height: 480px !important;
+        width: 100% !important;
+        max-width: 320px !important; 
+        height: 520px !important;
         margin: 0 auto !important; 
     }
     .poker-back {
@@ -115,7 +104,7 @@ st.markdown("""
     .card-panel {
         position: absolute; width: 100%; height: 100%;
         -webkit-backface-visibility: hidden; backface-visibility: hidden;
-        border-radius: 25px; padding: 25px 20px;
+        border-radius: 25px; padding: 30px 20px;
         box-shadow: 0 10px 25px rgba(0,0,0,0.1);
         border: 4px solid var(--border-color);
         display: flex; flex-direction: column;
@@ -130,20 +119,20 @@ st.markdown("""
     .stage-badge { position: absolute; top: 15px; right: 15px; background: var(--tip-bg); padding: 5px 12px; border-radius: 15px; font-size: 12px; font-weight: bold; color: #E25E3E; }
     .flip-hint { margin-top: auto; font-size: 11px; color: var(--text-muted); font-weight: bold; animation: pulse 1.5s infinite; text-align: center; }
     
-    .back-section { margin-bottom: 15px; width: 100%; }
-    .back-title { font-size: 14px; font-weight: 900; color: #E25E3E; margin-bottom: 5px; }
+    .back-section { margin-bottom: 18px; width: 100%; }
+    .back-title { font-size: 14px; font-weight: 900; color: #E25E3E; margin-bottom: 7px; }
     .back-text { font-size: 13.5px; color: var(--text-main); line-height: 1.6; word-break: keep-all; padding-left: 5px; }
 
     @keyframes shake { 0%, 100% { transform: rotate(0deg) scale(1); } 25% { transform: rotate(-8deg) scale(1.05); } 75% { transform: rotate(8deg) scale(1.05); } }
     .anim-shake { animation: shake 0.2s infinite; margin: 0 auto; }
     
-    /* 🎨 버튼 공통 디자인 (버튼 자체 너비를 100%로 주어 비율 컬럼에 꽉 차게 만듦) */
+    /* 🎨 버튼 공통 디자인 */
     #root div[data-testid="stButton"] { width: 100% !important; padding: 0 !important; margin: 0 !important; }
     
     #root button[kind="primary"], #root button[kind="secondary"] {
         -webkit-appearance: none !important; 
         appearance: none !important;
-        width: 100% !important;
+        width: 100% !important; /* Grid 칸에 무조건 100% 꽉 채움 */
         height: 55px !important;
         border-radius: 15px !important;
         font-weight: 900 !important;
@@ -233,7 +222,7 @@ st.markdown("<h1 style='text-align: center; color: var(--text-title); margin-bot
 # ⚙️ 설정 화면
 # ==========================================
 if st.session_state.show_settings:
-    # 파이썬 레벨에서도 8:2 명시적 지정 (CSS에서 덮어씌움)
+    # 파이썬 비율 값은 무시되고 CSS Grid가 무조건 1fr 55px로 쪼갬
     col_t, col_c = st.columns([4, 1])
     with col_t:
         st.markdown("<h3 style='color: var(--text-title); margin-top:12px; margin-bottom:0;'>⚙️ 놀이 조건 설정</h3>", unsafe_allow_html=True)
@@ -257,7 +246,7 @@ if st.session_state.show_settings:
     st.session_state.keyword = st.text_input("**4. 준비물/상황 (선택사항)**", value=st.session_state.keyword, placeholder="예: 거실에서, 종이컵")
 
 # ==========================================
-# 🐱‍🏍 메인 화면
+# 🥷 메인 화면
 # ==========================================
 else:
     main_area = st.empty()
@@ -268,8 +257,8 @@ else:
             main_area.error("데이터가 없습니다.")
         else:
             for _ in range(10): 
-                # 🐱‍🏍 닌자 고양이로 교체 완료
-                anim_html = '<div style="text-align: center; width: 100%;"><div class="poker-back anim-shake"><div style="font-size: 85px; margin: 0 auto;">🐱‍🏍</div></div></div>'
+                # 🥷 모든 기기에서 완벽 지원하는 닌자 이모지로 통일!
+                anim_html = '<div style="text-align: center; width: 100%;"><div class="poker-back anim-shake"><div style="font-size: 85px; margin: 0 auto;">🥷</div></div></div>'
                 main_area.markdown(anim_html, unsafe_allow_html=True)
                 time.sleep(0.08)
             
@@ -303,8 +292,7 @@ else:
                 st.rerun()
 
     if st.session_state.picked_card is None:
-        # 🐱‍🏍 닌자 고양이로 교체 완료
-        main_area.markdown('<div style="text-align: center; width: 100%;"><div class="poker-back"><div style="font-size: 85px; margin: 0 auto;">🐱‍🏍</div></div></div>', unsafe_allow_html=True)
+        main_area.markdown('<div style="text-align: center; width: 100%;"><div class="poker-back"><div style="font-size: 85px; margin: 0 auto;">🥷</div></div></div>', unsafe_allow_html=True)
     elif st.session_state.picked_card == "empty":
         main_area.warning("⚠️ 조건에 맞는 놀이가 없어요. ⚙️ 설정에서 조건을 변경해주세요!")
     else:
@@ -316,7 +304,7 @@ else:
         <div class="flip-card-inner">
         <div class="card-panel flip-card-front">
         <div class="stage-badge">{c.get('구분아이콘', '')} {c.get('아이발달단계', c.get('아이구분', ''))}</div>
-        <div class="emoji-huge">{c.get('카드아이콘', c.get('아이콘', '🐱‍🏍'))}</div>
+        <div class="emoji-huge">{c.get('카드아이콘', c.get('아이콘', '🥷'))}</div>
         <div class="title-text">{c.get('카드', c.get('제목', '놀이'))}</div>
         <hr style="border: 0; border-top: 2px dashed var(--border-color); margin: 20px 0; width: 100%;">
         <div class="info-row"><span>{c.get('아빠아이콘', '👨')} 아빠 체력</span><span class="stamina-stars">{c.get('아빠체력', '★★★')}</span></div>
@@ -325,7 +313,7 @@ else:
         </div>
         <div class="card-panel flip-card-back">
         <div class="stage-badge">{c.get('구분아이콘', '')} {c.get('아이발달단계', c.get('아이구분', ''))}</div>
-        <h3 style="margin-top: 10px; color:var(--text-title); font-size: 1.1em;">{c.get('카드아이콘', '🐱‍🏍')} {c.get('카드', '제목')}</h3>
+        <h3 style="margin-top: 10px; color:var(--text-title); font-size: 1.1em;">{c.get('카드아이콘', '🥷')} {c.get('카드', '제목')}</h3>
         <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 15px 0;">
         <div class="back-section"><div class="back-title">🎒 필요 도구</div><div class="back-text">{c.get('필요도구', '없음')}</div></div>
         <div class="back-section"><div class="back-title">📝 놀이 방법</div><div class="back-text">{c.get('놀이방법', '자유롭게 놀기')}</div></div>
@@ -338,7 +326,7 @@ else:
         """
         main_area.markdown(html_card, unsafe_allow_html=True)
 
-    # 🎯 하단 버튼 영역 (파이썬에서도 4:1=80%:20% 명시)
+    # 🎯 하단 버튼 영역 (CSS Grid가 알아서 1fr 55px로 맞춰줌)
     st.markdown("<br>", unsafe_allow_html=True)
     b_main, b_sub = st.columns([4, 1]) 
     with b_main:
