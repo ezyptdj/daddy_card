@@ -4,12 +4,12 @@ import time
 
 # --- 1. 페이지 기본 설정 ---
 st.set_page_config(
-    page_title="픽미! 아빠게임 101",
+    page_title="픽미! 아빠카드 101",
     page_icon="🎲",
     layout="centered"
 )
 
-# --- 2. CSS 스타일링 ---
+# --- 2. CSS 스타일링 (다크모드 파스텔 최적화 및 셔플 무늬 오류 수정) ---
 st.set_option("client.toolbarMode", "viewer") 
 
 st.markdown("""
@@ -24,19 +24,27 @@ st.markdown("""
         --text-muted: #718096;
         --border-color: #FBD38D; 
         --tip-bg: #FFEBE0;
+        
+        /* 라이트모드 맑은 파스텔 버튼 */
+        --btn-primary-bg: linear-gradient(135deg, #FFD1BA 0%, #FFB5A7 100%);
+        --btn-secondary-bg: linear-gradient(135deg, #E2F0CB 0%, #B5EAD7 100%);
         --btn-text: #4A4A4A;
     }
     
     @media (prefers-color-scheme: dark) {
         :root {
-            --app-bg: #262A33; 
-            --card-front-bg: #323844;
-            --card-back-bg: #2D323C;
-            --text-main: #F7FAFC;
+            --app-bg: #1A1C23; 
+            --card-front-bg: #2D323C;
+            --card-back-bg: #242831;
+            --text-main: #ECEFF4;
             --text-title: #FFB5A7; 
-            --text-muted: #A0AEC0;
+            --text-muted: #9BA3AF;
             --border-color: #4A5568;
             --tip-bg: #3E4553;
+            
+            /* 다크모드 전용 맑고 선명한 파스텔 버튼 */
+            --btn-primary-bg: linear-gradient(135deg, #FFAAA5 0%, #FF8B94 100%);
+            --btn-secondary-bg: linear-gradient(135deg, #A8E6CF 0%, #DCEDC1 100%);
             --btn-text: #1A1A1A;
         }
     }
@@ -44,20 +52,33 @@ st.markdown("""
     /* 기본 배경 */
     .stApp { background-color: var(--app-bg) !important; }
     
-    /* 앱 전체 컨테이너 모바일 최적화 */
+    /* 🚨 상단 여백 최소화 및 컨테이너 고정 */
     .block-container { 
         max-width: 360px !important; 
-        padding-top: 1.5rem !important; 
+        padding-top: 0.1rem !important; 
         padding-bottom: 1rem !important; 
         margin: 0 auto !important;
     }
     
-    /* 🚨 상단 Streamlit 헤더 및 지저분한 요소 완전 제거 */
-    [data-testid="stHeader"], header, [data-testid="stHeaderActionElements"], .stAppDeployButton, #MainMenu, footer { 
-        display: none !important; 
-    }
+    /* 헤더 제거 */
+    [data-testid="stHeader"], header { display: none !important; }
     
-    /* 🃏 포커 카드 & 애니메이션 카드 크기 완벽 고정 (커지는 현상 방지) */
+    /* 📱 모바일 가로 레이아웃 강제 유지 */
+    div[data-testid="stHorizontalBlock"] {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        width: 100% !important;
+    }
+    div[data-testid="column"] {
+        width: auto !important;
+        flex: 1 1 auto !important;
+        min-width: 0px !important;
+    }
+
+    /* 🃏 카드 및 애니메이션 크기 (320px 고정) */
     .poker-back, .flip-card {
         width: 320px !important; 
         height: 520px !important;
@@ -102,41 +123,40 @@ st.markdown("""
     .back-title { font-size: 14px; font-weight: 900; color: #E25E3E; margin-bottom: 7px; }
     .back-text { font-size: 13.5px; color: var(--text-main); line-height: 1.6; word-break: keep-all; padding-left: 5px; }
 
+    /* 셔플 애니메이션 오류 수정 (display 속성 삭제) */
     @keyframes shake { 0%, 100% { transform: rotate(0deg) scale(1); } 25% { transform: rotate(-8deg) scale(1.05); } 75% { transform: rotate(8deg) scale(1.05); } }
-    .anim-shake { animation: shake 0.2s infinite; display: block; margin: 0 auto; }
+    .anim-shake { animation: shake 0.2s infinite; margin: 0 auto; }
     @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
     
-    /* 공통 버튼 스타일 */
-    button[data-testid="baseButton-primary"], button[data-testid="baseButton-secondary"] {
+    /* 🎨 버튼 디자인 */
+    button {
         border-radius: 15px !important; 
         font-weight: 900 !important; 
-        padding: 14px !important; 
         height: 55px !important;
         transition: all 0.3s ease !important;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        display: flex !important;
+        justify-content: center !important;
+        align-items: center !important;
+        border: none !important;
     }
     
-    /* 🎲 메인 뽑기 버튼 (Primary) - 기존 파스텔 코랄 복구 */
+    /* 🎲 메인 뽑기 버튼 (Primary) */
     button[data-testid="baseButton-primary"] {
-        background: linear-gradient(135deg, #FFD1BA 0%, #FFB5A7 100%) !important;
-        color: #4A4A4A !important;
-        border: none !important;
+        background: var(--btn-primary-bg) !important;
+        color: var(--btn-text) !important;
         font-size: 18px !important; 
-        box-shadow: 0 4px 15px rgba(255, 181, 167, 0.4) !important;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
     }
-    button[data-testid="baseButton-primary"]:hover { transform: translateY(-2px) !important; box-shadow: 0 6px 20px rgba(255, 181, 167, 0.6) !important; }
     
-    /* ⚙️ 설정 & ✖️ 닫기 버튼 (Secondary) - 새로운 파스텔 민트/그린 */
+    /* ⚙️ 설정 & ✖️ 닫기 버튼 (Secondary) */
     button[data-testid="baseButton-secondary"] {
-        background: linear-gradient(135deg, #E2F0CB 0%, #B5EAD7 100%) !important;
-        color: #4A4A4A !important;
-        border: none !important;
+        background: var(--btn-secondary-bg) !important;
+        color: var(--btn-text) !important;
         font-size: 18px !important; 
-        box-shadow: 0 4px 15px rgba(181, 234, 215, 0.4) !important;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
     }
-    button[data-testid="baseButton-secondary"]:hover { transform: translateY(-2px) !important; box-shadow: 0 6px 20px rgba(181, 234, 215, 0.6) !important; }
+    
+    button:hover { transform: translateY(-2px) !important; filter: brightness(1.05); }
     
 </style>
 """, unsafe_allow_html=True)
@@ -148,7 +168,6 @@ def load_data():
         df = pd.read_excel("daddy_cards.xlsx")
         df = df.fillna("")
         df.columns = df.columns.str.replace(' ', '')
-        
         if '아빠체력' in df.columns:
             df['dad_score'] = df['아빠체력'].astype(str).str.count('★').replace(0, 1).astype(int)
         if '아이체력' in df.columns:
@@ -160,7 +179,7 @@ def load_data():
 
 df = load_data()
 
-# --- 4. 세션 상태 (상태유지) ---
+# --- 4. 세션 상태 ---
 if 'show_settings' not in st.session_state: st.session_state.show_settings = False
 if 'chk_기' not in st.session_state: st.session_state.chk_기 = True
 if 'chk_걷' not in st.session_state: st.session_state.chk_걷 = True
@@ -171,19 +190,17 @@ if 'keyword' not in st.session_state: st.session_state.keyword = ""
 if 'picked_card' not in st.session_state: st.session_state.picked_card = None
 if 'trigger_shuffle' not in st.session_state: st.session_state.trigger_shuffle = False
 
-# 공통 타이틀 (제목 복구)
-st.markdown("<h1 style='text-align: center; color: var(--text-title); margin-bottom: 20px; font-size: 2.2em;'>👨‍👧 픽미! 아빠게임 101</h1>", unsafe_allow_html=True)
+# 타이틀 (🚨 폰트 크기 축소 및 줄바꿈 방지 적용)
+st.markdown("<h1 style='text-align: center; color: var(--text-title); margin-bottom: 15px; font-size: 1.8em; white-space: nowrap;'>👨‍👧 픽미! 아빠카드 101</h1>", unsafe_allow_html=True)
 
 # ==========================================
-# ⚙️ 설정 화면 (카드와 동일한 넓이로 출력)
+# ⚙️ 설정 화면
 # ==========================================
 if st.session_state.show_settings:
-    
-    # 설정창 제목과 닫기 버튼 가로 정렬 (✖️ 아이콘 적용)
-    col_title, col_close = st.columns([4, 1], gap="small")
-    with col_title:
-        st.markdown("<h3 style='color: var(--text-title); margin-top:5px;'>⚙️ 놀이 조건 설정</h3>", unsafe_allow_html=True)
-    with col_close:
+    col_t, col_c = st.columns([4, 1])
+    with col_t:
+        st.markdown("<h3 style='color: var(--text-title); margin-top:5px; margin-bottom:0;'>⚙️ 놀이 조건 설정</h3>", unsafe_allow_html=True)
+    with col_c:
         if st.button("✖️", type="secondary", use_container_width=True):
             st.session_state.show_settings = False
             st.rerun()
@@ -203,27 +220,18 @@ if st.session_state.show_settings:
     st.session_state.keyword = st.text_input("**4. 준비물/상황 (선택사항)**", value=st.session_state.keyword, placeholder="예: 거실에서, 종이컵")
 
 # ==========================================
-# 🃏 메인 화면 (카드 & 하단 두 개의 버튼)
+# 🃏 메인 화면
 # ==========================================
 else:
     main_area = st.empty()
 
-    # 셔플 상태 로직
     if st.session_state.trigger_shuffle:
         st.session_state.trigger_shuffle = False
-        
         if df.empty:
             main_area.error("데이터가 없습니다.")
         else:
             for _ in range(10): 
-                anim_html = """
-    <div style="text-align: center; width: 100%;">
-    <div class="poker-back anim-shake">
-    <div style="font-size: 85px; margin: 0 auto;">🃏</div>
-    </div>
-    <h3 style="color: var(--text-muted); margin-top: 15px; font-size: 1.1em;">조건에 맞는 카드를 찾는 중...</h3>
-    </div>
-    """
+                anim_html = '<div style="text-align: center; width: 100%;"><div class="poker-back anim-shake"><div style="font-size: 85px; margin: 0 auto;">🃏</div></div><h3 style="color: var(--text-muted); margin-top: 15px; font-size: 1.1em;">조건에 맞는 카드를 찾는 중...</h3></div>'
                 main_area.markdown(anim_html, unsafe_allow_html=True)
                 time.sleep(0.08)
             
@@ -233,120 +241,73 @@ else:
             if st.session_state.chk_뛰: stage_keywords.append("뛰는아이")
             
             col_stage = '아이발달단계' if '아이발달단계' in df.columns else '아이구분'
-            
             if stage_keywords:
                 pattern = "|".join(stage_keywords)
-                filtered_df = df[df[col_stage].astype(str).str.contains(pattern, na=False)]
+                f_df = df[df[col_stage].astype(str).str.contains(pattern, na=False)]
             else:
-                filtered_df = pd.DataFrame()
+                f_df = pd.DataFrame()
             
-            if not filtered_df.empty and 'dad_score' in filtered_df.columns:
-                dad_min, dad_max = st.session_state.dad_stam
-                kid_min, kid_max = st.session_state.kid_stam
-                filtered_df = filtered_df[
-                    (filtered_df['dad_score'] >= dad_min) & (filtered_df['dad_score'] <= dad_max) &
-                    (filtered_df['kid_score'] >= kid_min) & (filtered_df['kid_score'] <= kid_max)
-                ]
+            if not f_df.empty:
+                d_min, d_max = st.session_state.dad_stam
+                k_min, k_max = st.session_state.kid_stam
+                f_df = f_df[(f_df['dad_score'] >= d_min) & (f_df['dad_score'] <= d_max) & (f_df['kid_score'] >= k_min) & (f_df['kid_score'] <= k_max)]
             
-            col_title_name = '카드' if '카드' in df.columns else '제목'
+            col_t_n = '카드' if '카드' in df.columns else '제목'
             kw = st.session_state.keyword.strip()
-            if not filtered_df.empty and kw:
-                filtered_df = filtered_df[
-                    filtered_df[col_title_name].astype(str).str.contains(kw) | 
-                    filtered_df['필요도구'].astype(str).str.contains(kw)
-                ]
+            if not f_df.empty and kw:
+                f_df = f_df[f_df[col_t_n].astype(str).str.contains(kw) | f_df['필요도구'].astype(str).str.contains(kw)]
             
-            if len(filtered_df) > 0:
-                st.session_state.picked_card = filtered_df.sample(1).iloc[0].to_dict()
+            if len(f_df) > 0:
+                st.session_state.picked_card = f_df.sample(1).iloc[0].to_dict()
                 st.rerun()
             else:
                 st.session_state.picked_card = "empty"
                 st.rerun()
 
-    # 화면 렌더링
     if st.session_state.picked_card is None:
-        main_area.markdown("""
-    <div style="text-align: center; width: 100%;">
-    <div class="poker-back">
-    <div style="font-size: 85px; margin: 0 auto;">🃏</div>
-    </div>
-    <h3 style="color: var(--text-muted); margin-top: 20px; font-size: 1.2em;">아래 버튼을 눌러 놀이를 뽑아주세요!</h3>
-    </div>
-    """, unsafe_allow_html=True)
-        
-    elif isinstance(st.session_state.picked_card, str) and st.session_state.picked_card == "empty":
-        main_area.warning("⚠️ 조건에 맞는 놀이가 없어요. 우측 하단의 ⚙️ 설정창에서 조건을 변경해주세요!")
-        
+        main_area.markdown('<div style="text-align: center; width: 100%;"><div class="poker-back"><div style="font-size: 85px; margin: 0 auto;">🃏</div></div><h3 style="color: var(--text-muted); margin-top: 20px; font-size: 1.2em;">아래 버튼을 눌러 놀이를 뽑아주세요!</h3></div>', unsafe_allow_html=True)
+    elif st.session_state.picked_card == "empty":
+        main_area.warning("⚠️ 조건에 맞는 놀이가 없어요. ⚙️ 설정에서 조건을 변경해주세요!")
     else:
-        card = st.session_state.picked_card
-        c_stage_icon = card.get('구분아이콘', '')
-        c_stage = card.get('아이발달단계', card.get('아이구분', ''))
-        c_icon = card.get('카드아이콘', card.get('아이콘', '🃏'))
-        c_title = card.get('카드', card.get('제목', '이름 없는 놀이')) 
-        c_dad_icon = card.get('아빠아이콘', '👨')
-        c_dad_sta = card.get('아빠체력', '★★★')
-        c_kid_icon = card.get('아이아이콘', '👶')
-        c_kid_sta = card.get('아이체력', '★★★')
-        c_tools = card.get('필요도구', '없음')
-        c_method = card.get('놀이방법', '자유롭게 놀아주세요!')
-        c_tip = card.get('아빠꿀팁', '아빠의 센스를 발휘해보세요!')
-        
-        html_flip_card = f"""
-    <div style="text-align: center; width: 100%;">
-    <label class="flip-card">
-    <input type="checkbox" style="display: none;">
-    <div class="flip-card-inner">
-    <div class="card-panel flip-card-front">
-    <div class="stage-badge">{c_stage_icon} {c_stage}</div>
-    <div class="emoji-huge">{c_icon}</div>
-    <div class="title-text">{c_title}</div>
-    <hr style="border: 0; border-top: 2px dashed var(--border-color); margin: 20px 0; width: 100%;">
-    <div class="info-row">
-    <span>{c_dad_icon} 아빠 체력</span>
-    <span class="stamina-stars">{c_dad_sta}</span>
-    </div>
-    <div class="info-row">
-    <span>{c_kid_icon} 아이 체력</span>
-    <span class="stamina-stars">{c_kid_sta}</span>
-    </div>
-    <div class="flip-hint">👆 카드를 터치해서 뒷면 보기 🔄</div>
-    </div>
-    <div class="card-panel flip-card-back">
-    <div class="stage-badge">{c_stage_icon} {c_stage}</div>
-    <h3 style="margin-top: 10px; color:var(--text-title); font-size: 1.1em;">{c_icon} {c_title}</h3>
-    <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 15px 0;">
-    <div class="back-section">
-    <div class="back-title">🎒 필요 도구</div>
-    <div class="back-text">{c_tools}</div>
-    </div>
-    <div class="back-section">
-    <div class="back-title">📝 놀이 방법</div>
-    <div class="back-text">{c_method}</div>
-    </div>
-    <div class="back-section">
-    <div class="back-title">💡 아빠 꿀팁</div>
-    <div class="back-text" style="background:var(--tip-bg); padding:15px; border-radius:12px;">{c_tip}</div>
-    </div>
-    <div class="flip-hint">👆 다시 터치해서 앞면 보기 🔄</div>
-    </div>
-    </div>
-    </label>
-    </div>
-    """
-        main_area.markdown(html_flip_card, unsafe_allow_html=True)
+        c = st.session_state.picked_card
+        html_card = f"""
+        <div style="text-align: center; width: 100%;">
+        <label class="flip-card">
+        <input type="checkbox" style="display: none;">
+        <div class="flip-card-inner">
+        <div class="card-panel flip-card-front">
+        <div class="stage-badge">{c.get('구분아이콘', '')} {c.get('아이발달단계', c.get('아이구분', ''))}</div>
+        <div class="emoji-huge">{c.get('카드아이콘', c.get('아이콘', '🃏'))}</div>
+        <div class="title-text">{c.get('카드', c.get('제목', '놀이'))}</div>
+        <hr style="border: 0; border-top: 2px dashed var(--border-color); margin: 20px 0; width: 100%;">
+        <div class="info-row"><span>{c.get('아빠아이콘', '👨')} 아빠 체력</span><span class="stamina-stars">{c.get('아빠체력', '★★★')}</span></div>
+        <div class="info-row"><span>{c.get('아이아이콘', '👶')} 아이 체력</span><span class="stamina-stars">{c.get('아이체력', '★★★')}</span></div>
+        <div class="flip-hint">👆 카드를 터치해서 뒷면 보기 🔄</div>
+        </div>
+        <div class="card-panel flip-card-back">
+        <div class="stage-badge">{c.get('구분아이콘', '')} {c.get('아이발달단계', c.get('아이구분', ''))}</div>
+        <h3 style="margin-top: 10px; color:var(--text-title); font-size: 1.1em;">{c.get('카드아이콘', '🃏')} {c.get('카드', '제목')}</h3>
+        <hr style="border: 0; border-top: 1px solid var(--border-color); margin: 15px 0;">
+        <div class="back-section"><div class="back-title">🎒 필요 도구</div><div class="back-text">{c.get('필요도구', '없음')}</div></div>
+        <div class="back-section"><div class="back-title">📝 놀이 방법</div><div class="back-text">{c.get('놀이방법', '자유롭게 놀기')}</div></div>
+        <div class="back-section"><div class="back-title">💡 아빠 꿀팁</div><div class="back-text" style="background:var(--tip-bg); padding:15px; border-radius:12px;">{c.get('아빠꿀팁', '센스 발휘!')}</div></div>
+        <div class="flip-hint">👆 다시 터치해서 앞면 보기 🔄</div>
+        </div>
+        </div>
+        </label>
+        </div>
+        """
+        main_area.markdown(html_card, unsafe_allow_html=True)
 
-    # 🎯 하단 버튼 영역 (메인 버튼 + 설정 버튼)
+    # 🎯 하단 버튼 영역 
     st.markdown("<br>", unsafe_allow_html=True)
-    
-    btn_col_main, btn_col_sub = st.columns([4, 1], gap="small") 
-    
-    with btn_col_main:
-        btn_label = "🎲 Pick Me!" if st.session_state.picked_card is None else "🔄 다시 뽑기!"
-        if st.button(btn_label, type="primary", use_container_width=True):
+    b_main, b_sub = st.columns([4, 1]) 
+    with b_main:
+        lbl = "🎲 Pick Me!" if st.session_state.picked_card is None else "🔄 다시 뽑기!"
+        if st.button(lbl, type="primary", use_container_width=True):
             st.session_state.trigger_shuffle = True
             st.rerun()
-            
-    with btn_col_sub:
+    with b_sub:
         if st.button("⚙️", type="secondary", use_container_width=True):
             st.session_state.show_settings = True
             st.rerun()
